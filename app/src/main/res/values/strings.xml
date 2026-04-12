@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Assignment Part 2</string>
+    <string name="weather">Weather</string>
+    <string name="search">Search</string>
+    <string name="or_you_can_choose_directly_from_here">Or you can choose directly from here.</string>
+    <string name="where_are_you_looking_for_in_perak">Where are you looking for in Perak?</string>
 </resources>
