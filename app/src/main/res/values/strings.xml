@@ -4,4 +4,10 @@
     <string name="search">Search</string>
     <string name="or_you_can_choose_directly_from_here">Or you can choose directly from here.</string>
     <string name="where_are_you_looking_for_in_perak">Where are you looking for in Perak?</string>
+    <string name="home">Home</string>
+    <string name="location">Location</string>
+    <string name="food">Food</string>
+    <string name="more">More</string>
+    <string name="local_recommendation">Local Recommendation</string>
+    <string name="best_attraction">Best Attraction</string>
 </resources>
