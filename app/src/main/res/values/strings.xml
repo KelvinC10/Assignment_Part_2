@@ -11,4 +11,18 @@
     <string name="local_recommendation">Local Recommendation</string>
     <string name="best_attraction">Best Attraction</string>
     <string name="date_format">Date %1$s</string>
+    <string name="user_guidelines">User Guidelines</string>
+    <string name="guidelines_text">Welcome to the Perak Local Tour Guide! Use the search bar to find local eateries or hidden attractions. Swipe through our horizontal lists to discover hidden gems in towns like Kampar and Taiping. You can track any location directly via the integrated Google Maps feature.</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="privacy_text">Your travel duration and activity interests are stored locally on this device for your privacy. This application uses GPS and geofencing to provide context-aware notifications when you are near participating small businesses. No personal data is shared with third-party commercial platforms.</string>
+    <string name="terms_amp_conditions"><![CDATA[Terms & Conditions]]></string>
+    <string name="terms_text">
+    1. Explore Together: We aim to provide the best hidden gems and local info. While things change, we’re here to help you discover Perak!\n\n
+    2. Travel Responsibly: You are the heart of this journey. We encourage you to explore safely and respect our local traditions.\n\n
+    3. Seamless Connections: We connect you with trusted tools like Google Maps to make your navigation easy and fun.\n\n
+    4. Proudly Group 19: All designs and curated local stories are crafted with care by our team for you.\n\n
+    5. Your Personal Guide: This app is your friendly "local friend" for authentic and meaningful travel.
+</string>
+    <string name="app_version_info">Version 1.0.0 (Beta) Developed by Pro Team of Group19</string>
+
 </resources>

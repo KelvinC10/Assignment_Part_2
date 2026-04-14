@@ -2,7 +2,6 @@ package my.edu.utar.assignmentpart2;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,67 +11,45 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
-
-public class MainActivity extends AppCompatActivity {
+public class More extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_more);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // 1. Find the TextView by its ID from your XML
-        TextView tvDate = findViewById(R.id.tvDate);
-
-        // 2. Get the current date from the system
-        Calendar calendar = Calendar.getInstance();
-
-        // 3. Define the format (Example: 14/4/2026)
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy", Locale.getDefault());
-        String currentDate = dateFormat.format(calendar.getTime());
-
-        // 4. Use getString to safely combine the text
-        String dateToShow = getString(R.string.date_format, currentDate);
-        tvDate.setText(dateToShow);
-
-
         // --- Bottom Navigation Logic ---
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
 
-        // Set Home as selected (since we are in MainActivity)
-        bottomNavigationView.setSelectedItemId(R.id.nav_home);
+        // Set More as selected (since we are in More Activity)
+        bottomNavigationView.setSelectedItemId(R.id.nav_more);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
-            if (id == R.id.nav_home) {
+            if (id == R.id.nav_more) {
                 return true; // Already here
+            } else if (id == R.id.nav_home) {
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                overridePendingTransition(0, 0); // Remove animation for smoother feel
+                return true;
             } else if (id == R.id.nav_location) {
                 startActivity(new Intent(getApplicationContext(), Location.class));
-                overridePendingTransition(0, 0); // Remove animation for smoother feel
+                overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_food) {
                 startActivity(new Intent(getApplicationContext(), Food.class));
-                overridePendingTransition(0, 0);
-                return true;
-            } else if (id == R.id.nav_more) {
-                startActivity(new Intent(getApplicationContext(), More.class));
                 overridePendingTransition(0, 0);
                 return true;
             }
             return false;
         });
 
-
     }
-
-
 }

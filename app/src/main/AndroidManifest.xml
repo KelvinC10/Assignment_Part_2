@@ -10,6 +10,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AssignmentPart2">
         <activity
+            android:name=".More"
+            android:exported="false" />
+        <activity
+            android:name=".Food"
+            android:exported="false" />
+        <activity
+            android:name=".Location"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
