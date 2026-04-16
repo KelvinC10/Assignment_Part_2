@@ -24,5 +24,6 @@
     5. Your Personal Guide: This app is your friendly "local friend" for authentic and meaningful travel.
 </string>
     <string name="app_version_info">Version 1.0.0 (Beta) Developed by Pro Team of Group19</string>
+    <string name="location_name">Location Name</string>
 
 </resources>
