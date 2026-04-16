@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1025489061443",
+    "project_id": "perak-tourism-app",
+    "storage_bucket": "perak-tourism-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025489061443:android:395d133f9c0fcf65a776f6",
+        "android_client_info": {
+          "package_name": "my.edu.utar.assignmentpart2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCu4cStOxL_xDLDrIa4M9iXTRisvZEbkCA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
