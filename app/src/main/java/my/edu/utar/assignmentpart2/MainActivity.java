@@ -3,61 +3,120 @@ package my.edu.utar.assignmentpart2;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
+
+    // 1. All your variables are declared correctly here
+    private AttractionAdapter adapterAttractions, adapterLocal, adapterFood;
+    private List<LocationModel> listAttractions, listLocal, listFood;
+    private RecyclerView rvAttractions, rvLocal, rvFood;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+        // Standard System Padding
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // 1. Find the TextView by its ID from your XML
+        // 1. Setup Date
         TextView tvDate = findViewById(R.id.tvDate);
-
-        // 2. Get the current date from the system
         Calendar calendar = Calendar.getInstance();
-
-        // 3. Define the format (Example: 14/4/2026)
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy", Locale.getDefault());
         String currentDate = dateFormat.format(calendar.getTime());
-
-        // 4. Use getString to safely combine the text
         String dateToShow = getString(R.string.date_format, currentDate);
         tvDate.setText(dateToShow);
 
+        // 2. Initialize Firebase
+        db = FirebaseFirestore.getInstance();
 
-        // --- Bottom Navigation Logic ---
+        // 3. Setup THE THREE CATEGORIES
+        setupRecyclerViews();
+
+        // 4. Fetch Data from your 3 Firestore Collections
+        // Make sure these collection names match your Firestore exactly!
+        loadCollection("Best Attraction Places", listAttractions, adapterAttractions);
+        loadCollection("Local Recommendation Places", listLocal, adapterLocal);
+        loadCollection("Food", listFood, adapterFood);
+
+        // 5. Bottom Navigation Logic
+        setupBottomNavigation();
+    }
+
+    private void setupRecyclerViews() {
+        // --- Category 1: Best Attractions ---
+        listAttractions = new ArrayList<>();
+        adapterAttractions = new AttractionAdapter(listAttractions);
+        rvAttractions = findViewById(R.id.rvBestAttraction); // Check ID in XML
+        rvAttractions.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvAttractions.setAdapter(adapterAttractions);
+
+        // --- Category 2: Local Recommendations ---
+        listLocal = new ArrayList<>();
+        adapterLocal = new AttractionAdapter(listLocal);
+        rvLocal = findViewById(R.id.rvLocalRec); // Ensure you have this ID in XML
+        rvLocal.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvLocal.setAdapter(adapterLocal);
+
+        // --- Category 3: Food ---
+        listFood = new ArrayList<>();
+        adapterFood = new AttractionAdapter(listFood);
+        rvFood = findViewById(R.id.rvFood); // Ensure you have this ID in XML
+        rvFood.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvFood.setAdapter(adapterFood);
+    }
+
+    private void loadCollection(String collectionName, List<LocationModel> list, AttractionAdapter adapter) {
+        db.collection(collectionName).get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    list.clear();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        LocationModel item = document.toObject(LocationModel.class);
+                        list.add(item);
+                    }
+                    adapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to load " + collectionName, Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
-
-        // Set Home as selected (since we are in MainActivity)
         bottomNavigationView.setSelectedItemId(R.id.nav_home);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-
             if (id == R.id.nav_home) {
-                return true; // Already here
+                return true;
             } else if (id == R.id.nav_location) {
                 startActivity(new Intent(getApplicationContext(), Location.class));
-                overridePendingTransition(0, 0); // Remove animation for smoother feel
+                overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_food) {
                 startActivity(new Intent(getApplicationContext(), Food.class));
@@ -70,9 +129,5 @@ public class MainActivity extends AppCompatActivity {
             }
             return false;
         });
-
-
     }
-
-
 }

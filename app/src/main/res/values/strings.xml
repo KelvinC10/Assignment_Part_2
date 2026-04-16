@@ -25,5 +25,6 @@
 </string>
     <string name="app_version_info">Version 1.0.0 (Beta) Developed by Pro Team of Group19</string>
     <string name="location_name">Location Name</string>
+    <string name="city">City</string>
 
 </resources>

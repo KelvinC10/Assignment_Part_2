@@ -1,21 +1,21 @@
 package my.edu.utar.assignmentpart2;
 
 public class LocationModel {
-    private String name, description, imageUrl, category;
+    private String name, description, imageUrl, city;
 
     // Empty constructor is REQUIRED for Firebase to work
     public LocationModel() {}
 
-    public LocationModel(String name, String description, String imageUrl, String category) {
+    public LocationModel(String name, String description, String imageUrl, String city) {
         this.name = name;
         this.description = description;
         this.imageUrl = imageUrl;
-        this.category = category;
+        this.city = city;
     }
 
     // Getters
     public String getName() { return name; }
     public String getDescription() { return description; }
     public String getImageUrl() { return imageUrl; }
-    public String getCategory() { return category; }
+    public String getCity() { return city; }
 }
