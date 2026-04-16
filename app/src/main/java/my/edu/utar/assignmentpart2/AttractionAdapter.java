@@ -61,7 +61,7 @@ public class AttractionAdapter extends RecyclerView.Adapter<AttractionAdapter.Vi
             ivPlace = itemView.findViewById(R.id.ivPlace);
             tvPlaceName = itemView.findViewById(R.id.tvPlaceName);
             // Links to the second TextView in your location_box.xml
-            tvPlaceCity = itemView.findViewById(R.id.tvPlaceCategory);
+            tvPlaceCity = itemView.findViewById(R.id.tvCity);
         }
     }
 }
