@@ -26,7 +26,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     // 1. All your variables are declared correctly here
-    private AttractionAdapter adapterAttractions, adapterLocal, adapterFood;
+    private MainActivityAdapter adapterAttractions, adapterLocal, adapterFood;
     private List<LocationModel> listAttractions, listLocal, listFood;
     private RecyclerView rvAttractions, rvLocal, rvFood;
     private FirebaseFirestore db;
@@ -71,27 +71,27 @@ public class MainActivity extends AppCompatActivity {
     private void setupRecyclerViews() {
         // --- Category 1: Best Attractions ---
         listAttractions = new ArrayList<>();
-        adapterAttractions = new AttractionAdapter(listAttractions);
+        adapterAttractions = new MainActivityAdapter(listAttractions);
         rvAttractions = findViewById(R.id.rvBestAttraction); // Check ID in XML
         rvAttractions.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvAttractions.setAdapter(adapterAttractions);
 
         // --- Category 2: Local Recommendations ---
         listLocal = new ArrayList<>();
-        adapterLocal = new AttractionAdapter(listLocal);
+        adapterLocal = new MainActivityAdapter(listLocal);
         rvLocal = findViewById(R.id.rvLocalRec); // Ensure you have this ID in XML
         rvLocal.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvLocal.setAdapter(adapterLocal);
 
         // --- Category 3: Food ---
         listFood = new ArrayList<>();
-        adapterFood = new AttractionAdapter(listFood);
+        adapterFood = new MainActivityAdapter(listFood);
         rvFood = findViewById(R.id.rvFood); // Ensure you have this ID in XML
         rvFood.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvFood.setAdapter(adapterFood);
     }
 
-    private void loadCollection(String collectionName, List<LocationModel> list, AttractionAdapter adapter) {
+    private void loadCollection(String collectionName, List<LocationModel> list, MainActivityAdapter adapter) {
         db.collection(collectionName).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     list.clear();

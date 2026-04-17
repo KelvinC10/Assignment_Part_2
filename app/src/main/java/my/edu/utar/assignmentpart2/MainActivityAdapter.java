@@ -14,13 +14,13 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 
 // 1. You must "extend" the RecyclerView.Adapter class here
-public class AttractionAdapter extends RecyclerView.Adapter<AttractionAdapter.ViewHolder> {
+public class MainActivityAdapter extends RecyclerView.Adapter<MainActivityAdapter.ViewHolder> {
 
     // 2. You must declare the list here so the methods below can see it
     private List<LocationModel> locationList;
 
     // 3. You need a Constructor to receive the list from MainActivity
-    public AttractionAdapter(List<LocationModel> locationList) {
+    public MainActivityAdapter(List<LocationModel> locationList) {
         this.locationList = locationList;
     }
 
@@ -42,7 +42,6 @@ public class AttractionAdapter extends RecyclerView.Adapter<AttractionAdapter.Vi
 
         Glide.with(holder.itemView.getContext())
                 .load(location.getImageUrl())
-                .placeholder(R.drawable.ic_launcher_background)
                 .into(holder.ivPlace);
     }
 

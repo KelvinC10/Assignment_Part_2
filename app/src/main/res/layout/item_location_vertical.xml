@@ -36,6 +36,7 @@
             app:layout_constraintStart_toStartOf="@+id/ivPlaceVertical"
             app:layout_constraintTop_toBottomOf="@+id/ivPlaceVertical" />
 
+
         <ImageView
             android:id="@+id/ivMapIcon"
             android:layout_width="28dp"
