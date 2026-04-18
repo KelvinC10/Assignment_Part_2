@@ -2,6 +2,7 @@ package my.edu.utar.assignmentpart2;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -66,6 +67,13 @@ public class MainActivity extends AppCompatActivity {
 
         // 5. Bottom Navigation Logic
         setupBottomNavigation();
+
+        // --- Setup Favourite Heart Icon Click ---
+        ImageView ivHeart = findViewById(R.id.ivHeart);
+        ivHeart.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, FavouriteList.class);
+            startActivity(intent);
+        });
     }
 
     private void setupRecyclerViews() {

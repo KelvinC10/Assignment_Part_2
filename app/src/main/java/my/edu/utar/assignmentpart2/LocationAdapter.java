@@ -23,10 +23,13 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
 
     private List<LocationModel> locationList;
     private Context context;
+    private String itemType; // NEW: "Location" or "Food"
 
-    public LocationAdapter(Context context, List<LocationModel> locationList) {
+    // NEW: Update constructor to accept the itemType
+    public LocationAdapter(Context context, List<LocationModel> locationList, String itemType) {
         this.context = context;
         this.locationList = locationList;
+        this.itemType = itemType;
     }
 
     @NonNull
@@ -41,20 +44,56 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
         LocationModel location = locationList.get(position);
 
         holder.tvPlaceName.setText(location.getName());
+        holder.tvPlaceCity.setText(location.getCity());
         holder.tvDescription.setText(location.getDescription());
 
-        Glide.with(context)
-                .load(location.getImageUrl())
-                .placeholder(R.drawable.ic_launcher_background)
-                .into(holder.ivPlace);
+        Glide.with(context).load(location.getImageUrl()).placeholder(R.drawable.ic_launcher_background).into(holder.ivPlace);
 
-        // Map Icon Click Listener - Opens Bottom Sheet
+        // --- NEW: Check if item is favourited and set correct icon ---
+        boolean isFavourite = false;
+        if (itemType.equals("Location")) {
+            isFavourite = FavouriteManager.isFavLocation(location.getName());
+        } else if (itemType.equals("Food")) {
+            isFavourite = FavouriteManager.isFavFood(location.getName());
+        }
+
+        if (isFavourite) {
+            holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_fill_icon); // Your filled icon
+        } else {
+            holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_icon); // Your empty icon
+        }
+
+        // --- NEW: Heart Icon Click Logic ---
+        holder.ivHeartIcon.setOnClickListener(v -> {
+            if (itemType.equals("Location")) {
+                if (FavouriteManager.isFavLocation(location.getName())) {
+                    // Remove it
+                    FavouriteManager.favLocations.removeIf(loc -> loc.getName().equals(location.getName()));
+                    holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_icon);
+                    Toast.makeText(context, "Removed from Favourites", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Add it
+                    FavouriteManager.favLocations.add(location);
+                    holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_fill_icon);
+                    Toast.makeText(context, "Added to Favourites", Toast.LENGTH_SHORT).show();
+                }
+            } else if (itemType.equals("Food")) {
+                if (FavouriteManager.isFavFood(location.getName())) {
+                    // Remove it
+                    FavouriteManager.favFoods.removeIf(loc -> loc.getName().equals(location.getName()));
+                    holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_icon);
+                    Toast.makeText(context, "Removed from Favourites", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Add it
+                    FavouriteManager.favFoods.add(location);
+                    holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_fill_icon);
+                    Toast.makeText(context, "Added to Favourites", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        // Map Icon Logic (Unchanged)
         holder.ivMapIcon.setOnClickListener(v -> showBottomSheetMap(location.getName()));
-
-        // Heart Icon Click Listener - Placeholder for now
-        holder.ivHeartIcon.setOnClickListener(v ->
-                Toast.makeText(context, "Added " + location.getName() + " to favorites!", Toast.LENGTH_SHORT).show()
-        );
     }
 
     @Override
@@ -69,11 +108,9 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
 
         Button btnOpenMap = view.findViewById(R.id.btnOpenGoogleMaps);
         btnOpenMap.setOnClickListener(v -> {
-            // Intent to open actual Google Maps App
             Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + Uri.encode(locationName + " Perak"));
             Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
             mapIntent.setPackage("com.google.android.apps.maps");
-
             if (mapIntent.resolveActivity(context.getPackageManager()) != null) {
                 context.startActivity(mapIntent);
             } else {
@@ -81,18 +118,18 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
             }
             bottomSheetDialog.dismiss();
         });
-
         bottomSheetDialog.show();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivPlace, ivMapIcon, ivHeartIcon;
-        TextView tvPlaceName, tvDescription;
+        TextView tvPlaceName, tvPlaceCity, tvDescription;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             ivPlace = itemView.findViewById(R.id.ivPlaceVertical);
             tvPlaceName = itemView.findViewById(R.id.tvPlaceNameVertical);
+            tvPlaceCity = itemView.findViewById(R.id.tvPlaceCityVertical);
             ivMapIcon = itemView.findViewById(R.id.ivMapIcon);
             ivHeartIcon = itemView.findViewById(R.id.ivHeartIcon);
             tvDescription = itemView.findViewById(R.id.tvDescription);

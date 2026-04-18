@@ -43,14 +43,14 @@ public class Location extends AppCompatActivity {
         rvBestVertical = findViewById(R.id.rvBestVertical);
         rvBestVertical.setLayoutManager(new LinearLayoutManager(this));
         listBest = new ArrayList<>();
-        adapterBest = new LocationAdapter(this, listBest);
+        adapterBest = new LocationAdapter(this, listBest, "Location");
         rvBestVertical.setAdapter(adapterBest);
 
         // 2. Setup Local Recommendations
         rvLocalVertical = findViewById(R.id.rvLocalVertical);
         rvLocalVertical.setLayoutManager(new LinearLayoutManager(this));
         listLocal = new ArrayList<>();
-        adapterLocal = new LocationAdapter(this, listLocal);
+        adapterLocal = new LocationAdapter(this, listLocal, "Location");
         rvLocalVertical.setAdapter(adapterLocal);
 
         // 3. Fetch Data for both from the NEW collections
