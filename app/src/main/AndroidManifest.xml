@@ -13,10 +13,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AssignmentPart2">
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyA8sgoY3sFJ0DfHRqh5xlERvfxU3iHufTg" />
+
+        <activity
+            android:name=".MapsActivity"
+            android:exported="false" />
+
         <activity
             android:name=".FavouriteList"
             android:exported="false" />
-
         <activity
             android:name=".More"
             android:exported="false" />

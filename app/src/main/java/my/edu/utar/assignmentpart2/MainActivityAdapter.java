@@ -1,5 +1,6 @@
 package my.edu.utar.assignmentpart2;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,18 +14,14 @@ import com.bumptech.glide.Glide;
 
 import java.util.List;
 
-// 1. You must "extend" the RecyclerView.Adapter class here
 public class MainActivityAdapter extends RecyclerView.Adapter<MainActivityAdapter.ViewHolder> {
 
-    // 2. You must declare the list here so the methods below can see it
     private List<LocationModel> locationList;
 
-    // 3. You need a Constructor to receive the list from MainActivity
     public MainActivityAdapter(List<LocationModel> locationList) {
         this.locationList = locationList;
     }
 
-    // 4. You were missing this method! It inflates your location_box.xml
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -36,16 +33,22 @@ public class MainActivityAdapter extends RecyclerView.Adapter<MainActivityAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         LocationModel location = locationList.get(position);
         holder.tvPlaceName.setText(location.getName());
-
-        // This shows the City (e.g., "Taiping")
         holder.tvPlaceCity.setText(location.getCity());
 
         Glide.with(holder.itemView.getContext())
                 .load(location.getImageUrl())
                 .into(holder.ivPlace);
+
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), MapsActivity.class);
+            intent.putExtra("placeName", location.getName());
+            intent.putExtra("city", location.getCity());
+            intent.putExtra("lat", location.getLatitude());
+            intent.putExtra("lng", location.getLongitude());
+            v.getContext().startActivity(intent);
+        });
     }
 
-    // 5. You were missing this method! It tells the list how many items to show
     @Override
     public int getItemCount() {
         return locationList.size();
@@ -59,7 +62,6 @@ public class MainActivityAdapter extends RecyclerView.Adapter<MainActivityAdapte
             super(itemView);
             ivPlace = itemView.findViewById(R.id.ivPlace);
             tvPlaceName = itemView.findViewById(R.id.tvPlaceName);
-            // Links to the second TextView in your location_box.xml
             tvPlaceCity = itemView.findViewById(R.id.tvCity);
         }
     }
