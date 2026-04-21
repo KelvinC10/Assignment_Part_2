@@ -77,24 +77,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerViews() {
-        // --- Category 1: Best Attractions ---
+        // --- Best Attractions ---
         listAttractions = new ArrayList<>();
-        adapterAttractions = new MainActivityAdapter(listAttractions);
-        rvAttractions = findViewById(R.id.rvBestAttraction); // Check ID in XML
+        // Add "Best" as the second parameter
+        adapterAttractions = new MainActivityAdapter(listAttractions, "Best");
+        rvAttractions = findViewById(R.id.rvBestAttraction);
         rvAttractions.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvAttractions.setAdapter(adapterAttractions);
 
-        // --- Category 2: Local Recommendations ---
+        // --- Local Recommendations ---
         listLocal = new ArrayList<>();
-        adapterLocal = new MainActivityAdapter(listLocal);
-        rvLocal = findViewById(R.id.rvLocalRec); // Ensure you have this ID in XML
+        // Add "Local" as the second parameter
+        adapterLocal = new MainActivityAdapter(listLocal, "Local");
+        rvLocal = findViewById(R.id.rvLocalRec);
         rvLocal.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvLocal.setAdapter(adapterLocal);
 
-        // --- Category 3: Food ---
+        // --- Food ---
         listFood = new ArrayList<>();
-        adapterFood = new MainActivityAdapter(listFood);
-        rvFood = findViewById(R.id.rvFood); // Ensure you have this ID in XML
+        // Add "Food" as the second parameter
+        adapterFood = new MainActivityAdapter(listFood, "Food");
+        rvFood = findViewById(R.id.rvFood);
         rvFood.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvFood.setAdapter(adapterFood);
     }

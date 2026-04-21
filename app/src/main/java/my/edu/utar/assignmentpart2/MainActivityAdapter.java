@@ -17,9 +17,11 @@ import java.util.List;
 public class MainActivityAdapter extends RecyclerView.Adapter<MainActivityAdapter.ViewHolder> {
 
     private List<LocationModel> locationList;
+    private String category;
 
-    public MainActivityAdapter(List<LocationModel> locationList) {
+    public MainActivityAdapter(List<LocationModel> locationList, String category) {
         this.locationList = locationList;
+        this.category = category;
     }
 
     @NonNull
@@ -40,11 +42,21 @@ public class MainActivityAdapter extends RecyclerView.Adapter<MainActivityAdapte
                 .into(holder.ivPlace);
 
         holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(v.getContext(), MapsActivity.class);
-            intent.putExtra("placeName", location.getName());
-            intent.putExtra("city", location.getCity());
-            intent.putExtra("lat", location.getLatitude());
-            intent.putExtra("lng", location.getLongitude());
+            Intent intent;
+
+            // 1. Decide which Activity to go to
+            if ("Food".equals(category)) {
+                intent = new Intent(v.getContext(), Food.class);
+            } else {
+                intent = new Intent(v.getContext(), Location.class);
+            }
+
+            // 2. ALWAYS pass the category key so the target page can Toast/Scroll
+            intent.putExtra("CATEGORY_KEY", category);
+
+            // 3. Add flags so the Activity "refreshes" properly if it was already open
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
             v.getContext().startActivity(intent);
         });
     }
