@@ -66,6 +66,10 @@ public class FavouriteList extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(), Food.class));
                 overridePendingTransition(0, 0);
                 return true;
+            } else if (id == R.id.nav_AI) {
+                startActivity(new Intent(getApplicationContext(), AI.class));
+                overridePendingTransition(0, 0);
+                return true;
             } else if (id == R.id.nav_more) {
                 startActivity(new Intent(getApplicationContext(), More.class));
                 overridePendingTransition(0, 0);

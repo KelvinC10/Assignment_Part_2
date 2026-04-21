@@ -11,29 +11,31 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class More extends AppCompatActivity {
+public class AI extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_more);
+        setContentView(R.layout.activity_ai);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
+
+
         // --- Bottom Navigation Logic ---
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
 
         // Set More as selected (since we are in More Activity)
-        bottomNavigationView.setSelectedItemId(R.id.nav_more);
+        bottomNavigationView.setSelectedItemId(R.id.nav_AI);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
-            if (id == R.id.nav_more) {
+            if (id == R.id.nav_AI) {
                 return true; // Already here
             } else if (id == R.id.nav_home) {
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
@@ -47,13 +49,14 @@ public class More extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(), Food.class));
                 overridePendingTransition(0, 0);
                 return true;
-            } else if (id == R.id.nav_AI) {
-                startActivity(new Intent(getApplicationContext(), AI.class));
+            } else if (id == R.id.nav_more) {
+                startActivity(new Intent(getApplicationContext(), More.class));
                 overridePendingTransition(0, 0);
                 return true;
             }
-            return false;
-        });
+        return false;
+    });
+
 
     }
 }

@@ -17,6 +17,11 @@
         android:title="@string/food" />
 
     <item
+        android:id="@+id/nav_AI"
+        android:icon="@drawable/ic_ai"
+        android:title="@string/ai"/>
+
+    <item
         android:id="@+id/nav_more"
         android:icon="@drawable/ic_menu"
         android:title="@string/more" />
