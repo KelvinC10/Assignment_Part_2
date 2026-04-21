@@ -12,38 +12,48 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AssignmentPart2"
         android:usesCleartextTraffic="true">
+
         <activity
             android:name=".AI"
             android:exported="false" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyA8sgoY3sFJ0DfHRqh5xlERvfxU3iHufTg" />
+            android:value="YOUR_REAL_GOOGLE_MAPS_API_KEY" />
+
+        <activity
+            android:name=".ChatActivity"
+            android:exported="false" />
 
         <activity
             android:name=".MapsActivity"
             android:exported="false" />
+
         <activity
             android:name=".FavouriteList"
             android:exported="false" />
+
         <activity
             android:name=".More"
             android:exported="false" />
+
         <activity
             android:name=".Food"
             android:exported="false" />
+
         <activity
             android:name=".Location"
             android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

@@ -18,26 +18,24 @@ public class More extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_more);
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // --- Bottom Navigation Logic ---
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
-
-        // Set More as selected (since we are in More Activity)
         bottomNavigationView.setSelectedItemId(R.id.nav_more);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
             if (id == R.id.nav_more) {
-                return true; // Already here
+                return true;
             } else if (id == R.id.nav_home) {
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                overridePendingTransition(0, 0); // Remove animation for smoother feel
+                overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_location) {
                 startActivity(new Intent(getApplicationContext(), Location.class));
@@ -47,13 +45,8 @@ public class More extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(), Food.class));
                 overridePendingTransition(0, 0);
                 return true;
-            } else if (id == R.id.nav_AI) {
-                startActivity(new Intent(getApplicationContext(), AI.class));
-                overridePendingTransition(0, 0);
-                return true;
             }
             return false;
         });
-
     }
 }
