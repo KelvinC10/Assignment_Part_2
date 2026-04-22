@@ -45,6 +45,9 @@
             android:name=".Location"
             android:exported="false" />
 
+        <activity android:name=".WeatherActivity"
+            android:exported="false"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true">

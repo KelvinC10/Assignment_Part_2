@@ -2,6 +2,7 @@ package my.edu.utar.assignmentpart2;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -92,6 +93,12 @@ public class MainActivity extends AppCompatActivity {
         ImageView ivHeart = findViewById(R.id.ivHeart);
         ivHeart.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, FavouriteList.class);
+            startActivity(intent);
+        });
+
+        View weatherButton = findViewById(R.id.ivWeather);
+        weatherButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, WeatherActivity.class);
             startActivity(intent);
         });
     }
