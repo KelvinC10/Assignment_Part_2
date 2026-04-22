@@ -2,6 +2,7 @@ package my.edu.utar.assignmentpart2;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,8 +30,13 @@ public class MainActivity extends AppCompatActivity {
     // 1. All your variables are declared correctly here
     private MainActivityAdapter adapterAttractions, adapterLocal, adapterFood;
     private List<LocationModel> listAttractions, listLocal, listFood;
-    private RecyclerView rvAttractions, rvLocal, rvFood;
+    private RecyclerView rvAttractions, rvLocal, rvFood, rvSearch;
     private FirebaseFirestore db;
+    private android.widget.LinearLayout llNoResult;
+    private EditText etSearch;
+    private SearchAdapter searchAdapter;
+    private List<LocationModel> masterSearchList = new ArrayList<>();
+    private List<String> masterSearchTypes = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +61,20 @@ public class MainActivity extends AppCompatActivity {
 
         // 2. Initialize Firebase
         db = FirebaseFirestore.getInstance();
+
+        // Initialize Search Elements
+        etSearch = findViewById(R.id.etSearch);
+        rvSearch = findViewById(R.id.rvSearch);
+        llNoResult = findViewById(R.id.llNoResult);
+
+        rvSearch.setLayoutManager(new LinearLayoutManager(this));
+        searchAdapter = new SearchAdapter(this, new ArrayList<>(), new ArrayList<>());
+        rvSearch.setAdapter(searchAdapter);
+
+        // Add the typing listener
+        setupSearchBar();
+
+        fetchGlobalSearchData();
 
         // 3. Setup THE THREE CATEGORIES
         setupRecyclerViews();
@@ -143,6 +163,81 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
             return false;
+        });
+    }
+    private void setupSearchBar() {
+        etSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterSearch(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
+    }
+
+    private void filterSearch(String query) {
+        // If search bar is empty, hide everything
+        if (query.trim().isEmpty()) {
+            rvSearch.setVisibility(android.view.View.GONE);
+            llNoResult.setVisibility(android.view.View.GONE);
+            return;
+        }
+
+        List<LocationModel> filteredList = new ArrayList<>();
+        List<String> filteredTypes = new ArrayList<>();
+
+        // Scan the Global Master List
+        for (int i = 0; i < masterSearchList.size(); i++) {
+            LocationModel item = masterSearchList.get(i);
+
+            // If the name contains the typed letters (ignoring uppercase/lowercase)
+            if (item.getName().toLowerCase().contains(query.toLowerCase())) {
+                filteredList.add(item);
+                filteredTypes.add(masterSearchTypes.get(i));
+            }
+        }
+
+        // Show Results OR Show "Doesn't Exist" Layout
+        if (filteredList.isEmpty()) {
+            rvSearch.setVisibility(android.view.View.GONE);
+            llNoResult.setVisibility(android.view.View.VISIBLE);
+        } else {
+            searchAdapter.updateList(filteredList, filteredTypes);
+            rvSearch.setVisibility(android.view.View.VISIBLE);
+            llNoResult.setVisibility(android.view.View.GONE);
+        }
+    }
+    private void fetchGlobalSearchData() {
+        masterSearchList.clear();
+        masterSearchTypes.clear();
+
+        // 1. Fetch from Location Best Attractions
+        db.collection("Location Best Attraction Places").get().addOnSuccessListener(qs -> {
+            for (QueryDocumentSnapshot doc : qs) {
+                masterSearchList.add(doc.toObject(LocationModel.class));
+                masterSearchTypes.add("Location");
+            }
+        });
+
+        // 2. Fetch from Location Local Recommendations
+        db.collection("Location Local Recommendation Places").get().addOnSuccessListener(qs -> {
+            for (QueryDocumentSnapshot doc : qs) {
+                masterSearchList.add(doc.toObject(LocationModel.class));
+                masterSearchTypes.add("Location");
+            }
+        });
+
+        // 3. Fetch from Food Best Food
+        db.collection("Food Page Food").get().addOnSuccessListener(qs -> {
+            for (QueryDocumentSnapshot doc : qs) {
+                masterSearchList.add(doc.toObject(LocationModel.class));
+                masterSearchTypes.add("Food");
+            }
         });
     }
 }

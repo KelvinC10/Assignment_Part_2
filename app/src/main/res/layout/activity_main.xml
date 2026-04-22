@@ -100,6 +100,51 @@
                     android:singleLine="true"
                     app:layout_constraintTop_toBottomOf="@+id/tvPrompt" />
 
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvSearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/search_bar_background"
+                    android:elevation="8dp"
+                    android:padding="8dp"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toBottomOf="@+id/etSearch" />
+
+                <LinearLayout
+                    android:id="@+id/llNoResult"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toBottomOf="@+id/etSearch">
+
+                    <ImageView
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:src="@drawable/ic_search_icon"
+                        app:tint="#BDBDBD" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Oops! No results found."
+                        android:textColor="#424242"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Try searching for a different location or food."
+                        android:textColor="#757575"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
                 <TextView
                     android:id="@+id/tvSubtitle"
                     android:layout_width="wrap_content"
@@ -109,7 +154,7 @@
                     android:textColor="#666666"
                     android:textSize="14sp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/etSearch" />
+                    app:layout_constraintTop_toBottomOf="@+id/rvSearch" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <LinearLayout
