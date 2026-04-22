@@ -94,6 +94,21 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
             intent.putExtra("lng", location.getLongitude());
             context.startActivity(intent);
         });
+
+        // --- NEW: Make the whole card clickable to open DetailsActivity ---
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, DetailsActivity.class);
+            // Pass all the data
+            intent.putExtra("name", location.getName());
+            intent.putExtra("city", location.getCity());
+            intent.putExtra("description", location.getDescription());
+            intent.putExtra("imageUrl", location.getImageUrl());
+            intent.putExtra("lat", location.getLatitude());
+            intent.putExtra("lng", location.getLongitude());
+            intent.putExtra("itemType", itemType); // "Location" or "Food"
+
+            context.startActivity(intent);
+        });
     }
 
     @Override

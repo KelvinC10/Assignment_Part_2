@@ -23,4 +23,22 @@ public class FavouriteManager {
         }
         return false;
     }
+
+    // --- NEW: Add and Remove Methods for Locations ---
+    public static void addLocation(LocationModel location) {
+        favLocations.add(location);
+    }
+
+    public static void removeLocation(String name) {
+        favLocations.removeIf(loc -> loc.getName().equals(name));
+    }
+
+    // --- NEW: Add and Remove Methods for Foods ---
+    public static void addFood(LocationModel food) {
+        favFoods.add(food);
+    }
+
+    public static void removeFood(String name) {
+        favFoods.removeIf(loc -> loc.getName().equals(name));
+    }
 }
