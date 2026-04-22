@@ -71,6 +71,12 @@ public class DetailsActivity extends AppCompatActivity {
             finish(); // This instantly closes the Details page and reveals the previous screen
         });
 
+        // Initialize the Places SDK
+        if (!com.google.android.libraries.places.api.Places.isInitialized()) {
+            // Replace this with the exact API key from your Google Cloud Console
+            com.google.android.libraries.places.api.Places.initializeWithNewPlacesApiEnabled(getApplicationContext(), "AIzaSyCj9zf6RkkQh_bx23N2QHtG4BFqZzaM_Bc");
+        }
+
         // 6. Load Reviews
         loadReviews();
     }
@@ -117,13 +123,72 @@ public class DetailsActivity extends AppCompatActivity {
     }
 
     private void loadReviews() {
-        // NOTE: To get real reviews, you must implement the Google Places SDK.
-        // For now, this injects a mock review so your UI looks complete.
-        TextView mockReview = new TextView(this);
-        mockReview.setText("⭐⭐⭐⭐⭐\n\"Great place to visit! Highly recommend checking this out when you are in " + city + ".\" - Google User");
-        mockReview.setPadding(16, 16, 16, 16);
-        mockReview.setBackgroundColor(android.graphics.Color.parseColor("#F0F0F0"));
+        // 1. Create the Places Client
+        com.google.android.libraries.places.api.net.PlacesClient placesClient =
+                com.google.android.libraries.places.api.Places.createClient(this);
 
-        llReviewsContainer.addView(mockReview);
+        // 2. Define what data we want Google to return (We just want the Reviews)
+        java.util.List<com.google.android.libraries.places.api.model.Place.Field> placeFields =
+                java.util.Arrays.asList(com.google.android.libraries.places.api.model.Place.Field.REVIEWS);
+
+        // 3. Search for the place using the Name and City
+        String searchQuery = name + " " + city;
+
+        // --- FIXED: Pass both the searchQuery and placeFields into the builder ---
+        com.google.android.libraries.places.api.net.SearchByTextRequest searchRequest =
+                com.google.android.libraries.places.api.net.SearchByTextRequest.builder(searchQuery, placeFields)
+                        .setMaxResultCount(1)
+                        .build();
+
+        // 4. Send the request to Google
+        placesClient.searchByText(searchRequest).addOnSuccessListener(response -> {
+            java.util.List<com.google.android.libraries.places.api.model.Place> places = response.getPlaces();
+
+            if (!places.isEmpty()) {
+                com.google.android.libraries.places.api.model.Place place = places.get(0);
+                java.util.List<com.google.android.libraries.places.api.model.Review> reviews = place.getReviews();
+
+                if (reviews != null && !reviews.isEmpty()) {
+                    // Loop through the reviews and add them to your UI
+                    for (com.google.android.libraries.places.api.model.Review review : reviews) {
+                        addReviewToUI(review.getAuthorAttribution().getName(), review.getRating(), review.getText());
+                    }
+                } else {
+                    addReviewToUI("System", 0, "No reviews found for this location yet.");
+                }
+            } else {
+                addReviewToUI("System", 0, "Could not locate this place on Google Maps.");
+            }
+        }).addOnFailureListener(e -> {
+            addReviewToUI("Error", 0, "Failed to load reviews: " + e.getMessage());
+        });
+    }
+
+    // Helper method to build the visual review boxes
+    private void addReviewToUI(String author, double rating, String text) {
+        TextView reviewBox = new TextView(this);
+
+        // Convert the number rating (e.g., 4.0) into star emojis
+        StringBuilder stars = new StringBuilder();
+        for (int i = 0; i < (int) rating; i++) {
+            stars.append("⭐");
+        }
+
+        reviewBox.setText(stars.toString() + "\n\"" + text + "\"\n- " + author);
+        reviewBox.setPadding(24, 24, 24, 24);
+        reviewBox.setTextSize(14f);
+        reviewBox.setTextColor(android.graphics.Color.DKGRAY);
+
+        // Add a small margin between reviews
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(0, 0, 0, 16);
+        reviewBox.setLayoutParams(params);
+
+        reviewBox.setBackgroundColor(android.graphics.Color.parseColor("#F0F0F0"));
+
+        llReviewsContainer.addView(reviewBox);
     }
 }
