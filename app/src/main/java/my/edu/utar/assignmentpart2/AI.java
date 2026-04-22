@@ -35,6 +35,7 @@ public class AI extends AppCompatActivity {
         });
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_AI);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();

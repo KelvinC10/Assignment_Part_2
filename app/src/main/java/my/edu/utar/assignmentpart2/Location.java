@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.core.widget.NestedScrollView; // Ensure this is imported
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,7 +26,10 @@ public class Location extends AppCompatActivity {
     private LocationAdapter adapterBest, adapterLocal;
     private List<LocationModel> listBest, listLocal;
     private FirebaseFirestore db;
-    private NestedScrollView nestedScrollView; // Needed for smooth scrolling
+    private NestedScrollView nestedScrollView;
+
+    // The "Gatekeeper" flag
+    private boolean hasToasted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,20 +44,16 @@ public class Location extends AppCompatActivity {
         });
 
         db = FirebaseFirestore.getInstance();
-
-        // Find the ScrollView (Make sure your XML ID matches this)
         nestedScrollView = findViewById(R.id.nestedScrollView);
 
-        // 1. Setup Best Attractions
+        // 1. Setup RecyclerViews
         rvBestVertical = findViewById(R.id.rvBestVertical);
         rvBestVertical.setLayoutManager(new LinearLayoutManager(this));
-        // Disabling nested scrolling on RV allows the NestedScrollView to handle it smoothly
         rvBestVertical.setNestedScrollingEnabled(false);
         listBest = new ArrayList<>();
         adapterBest = new LocationAdapter(this, listBest, "Location");
         rvBestVertical.setAdapter(adapterBest);
 
-        // 2. Setup Local Recommendations
         rvLocalVertical = findViewById(R.id.rvLocalVertical);
         rvLocalVertical.setLayoutManager(new LinearLayoutManager(this));
         rvLocalVertical.setNestedScrollingEnabled(false);
@@ -62,40 +61,34 @@ public class Location extends AppCompatActivity {
         adapterLocal = new LocationAdapter(this, listLocal, "Location");
         rvLocalVertical.setAdapter(adapterLocal);
 
-        // 3. Fetch Data
+        // 2. Fetch Data
         fetchLocationData();
 
-        // --- NEW: AUTO-SCROLL LOGIC ---
-        handleIncomingIntent();
-
-        // 4. Bottom Navigation Logic (Keep your existing code)
+        // 3. Setup Bottom Navigation
         setupBottomNavigation();
     }
 
-    // Inside your Location.java
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        // Reset the gatekeeper for the new click from Home
+        hasToasted = false;
+    }
 
-    private void handleIncomingIntent() {
-        String category = getIntent().getStringExtra("CATEGORY_KEY");
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-        if (category != null && nestedScrollView != null) {
-            // We use post() to wait for the UI to exist
-            nestedScrollView.post(() -> {
-                if (category.equals("Local")) {
-                    // 1. Force the layout to calculate where everything is
-                    rvLocalVertical.requestLayout();
-
-                    // 2. Use a small delay to allow the cards to "inflate"
-                    nestedScrollView.postDelayed(() -> {
-                        // Get the exact location of the Local Recommendation header/RV
-                        int scrollToY = rvLocalVertical.getTop();
-
-                        // 3. Jump or Smooth Scroll to that exact Y position
-                        nestedScrollView.smoothScrollTo(0, scrollToY);
-
-                    }, 100); // 100ms is enough to be "instant" but safe
-                }
-            });
+        // Sync the Bottom Navigation highlight
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setSelectedItemId(R.id.nav_location);
         }
+
+        // Try to scroll if data is already cached
+        checkAndScroll("Best");
+        checkAndScroll("Local");
     }
 
     private void fetchLocationData() {
@@ -107,8 +100,6 @@ public class Location extends AppCompatActivity {
                         listBest.add(item);
                     }
                     adapterBest.notifyDataSetChanged();
-
-                    // If the user clicked "Best", check if we should scroll now
                     checkAndScroll("Best");
                 });
 
@@ -120,8 +111,6 @@ public class Location extends AppCompatActivity {
                         listLocal.add(item);
                     }
                     adapterLocal.notifyDataSetChanged();
-
-                    // If the user clicked "Local", check if we should scroll now
                     checkAndScroll("Local");
                 });
     }
@@ -129,26 +118,31 @@ public class Location extends AppCompatActivity {
     private void checkAndScroll(String currentLoadedCategory) {
         String targetCategory = getIntent().getStringExtra("CATEGORY_KEY");
 
-        // If the category we just loaded is the one the user clicked, perform the scroll
         if (targetCategory != null && targetCategory.equals(currentLoadedCategory)) {
-            nestedScrollView.postDelayed(() -> {
 
-                // Sequence: Best first, then Local
-                if (targetCategory.equals("Best")) {
+            // --- EARLY LOCKING FIX ---
+            // If the gate is already locked, stop immediately!
+            if (hasToasted) return;
+
+            // Lock the gate NOW before the delay starts
+            hasToasted = true;
+
+            nestedScrollView.postDelayed(() -> {
+                if (targetCategory.equals("Best") && !listBest.isEmpty()) {
                     nestedScrollView.smoothScrollTo(0, rvBestVertical.getTop());
                     Toast.makeText(this, "Welcome to Best Attractions Category", Toast.LENGTH_SHORT).show();
-
-                } else if (targetCategory.equals("Local")) {
-                    // Calculation: scroll to the top position of the second RecyclerView
+                    getIntent().removeExtra("CATEGORY_KEY");
+                }
+                else if (targetCategory.equals("Local") && !listLocal.isEmpty()) {
                     int scrollToY = rvLocalVertical.getTop();
                     nestedScrollView.smoothScrollTo(0, scrollToY);
                     Toast.makeText(this, "Welcome to Local Recommendations Category", Toast.LENGTH_SHORT).show();
+                    getIntent().removeExtra("CATEGORY_KEY");
+                } else {
+                    // If we failed because data wasn't ready, unlock so the next fetch call can try
+                    hasToasted = false;
                 }
-
-                // Important: Clear the intent so it doesn't re-toast if the user rotates the screen
-                getIntent().removeExtra("CATEGORY_KEY");
-
-            }, 150); // Small delay to ensure the UI has finished drawing the new cards
+            }, 250);
         }
     }
 
@@ -157,23 +151,21 @@ public class Location extends AppCompatActivity {
         bottomNavigationView.setSelectedItemId(R.id.nav_location);
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.nav_location) return true;
+            if (id == R.id.nav_location)
+                return true;
             if (id == R.id.nav_home) {
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 overridePendingTransition(0, 0);
                 return true;
-            }
-            if (id == R.id.nav_food) {
+            } else if (id == R.id.nav_food) {
                 startActivity(new Intent(getApplicationContext(), Food.class));
                 overridePendingTransition(0, 0);
                 return true;
-            }
-            if (id == R.id.nav_AI) {
+            } else if (id == R.id.nav_AI) {
                 startActivity(new Intent(getApplicationContext(), AI.class));
                 overridePendingTransition(0, 0);
                 return true;
-            }
-            if (id == R.id.nav_more) {
+            } else if (id == R.id.nav_more) {
                 startActivity(new Intent(getApplicationContext(), More.class));
                 overridePendingTransition(0, 0);
                 return true;

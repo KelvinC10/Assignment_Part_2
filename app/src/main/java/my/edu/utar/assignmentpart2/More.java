@@ -45,6 +45,10 @@ public class More extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(), Food.class));
                 overridePendingTransition(0, 0);
                 return true;
+            } else if (id == R.id.nav_AI) {
+                startActivity(new Intent(getApplicationContext(), AI.class));
+                overridePendingTransition(0, 0);
+                return true;
             }
             return false;
         });

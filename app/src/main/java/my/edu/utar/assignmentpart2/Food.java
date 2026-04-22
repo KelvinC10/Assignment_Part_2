@@ -65,6 +65,13 @@ public class Food extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        // --- FIX: Sync the Bottom Navigation Bar ---
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setSelectedItemId(R.id.nav_food);
+        }
+
         handleFoodIntent();
     }
 
@@ -97,23 +104,21 @@ public class Food extends AppCompatActivity {
         bottomNavigationView.setSelectedItemId(R.id.nav_food);
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.nav_food) return true;
+            if (id == R.id.nav_food)
+                return true;
             if (id == R.id.nav_home) {
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 overridePendingTransition(0, 0);
                 return true;
-            }
-            if (id == R.id.nav_location) {
+            } else if (id == R.id.nav_location) {
                 startActivity(new Intent(getApplicationContext(), Location.class));
                 overridePendingTransition(0, 0);
                 return true;
-            }
-            if (id == R.id.nav_AI) {
+            } else if (id == R.id.nav_AI) {
                 startActivity(new Intent(getApplicationContext(), AI.class));
                 overridePendingTransition(0, 0);
                 return true;
-            }
-            if (id == R.id.nav_more) {
+            } else if (id == R.id.nav_more) {
                 startActivity(new Intent(getApplicationContext(), More.class));
                 overridePendingTransition(0, 0);
                 return true;
