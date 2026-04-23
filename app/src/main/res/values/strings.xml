@@ -27,5 +27,7 @@
     <string name="location_name">Location Name</string>
     <string name="city">City</string>
     <string name="ai">AI</string>
+    <string name="oops_no_results_found">Oops! No results found.</string>
+    <string name="try_searching_for_a_different_location_or_food">Try searching for a different location or food.</string>
 
 </resources>

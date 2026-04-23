@@ -131,7 +131,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:text="Oops! No results found."
+                        android:text="@string/oops_no_results_found"
                         android:textColor="#424242"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -140,7 +140,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Try searching for a different location or food."
+                        android:text="@string/try_searching_for_a_different_location_or_food"
                         android:textColor="#757575"
                         android:textSize="14sp" />
                 </LinearLayout>
