@@ -65,7 +65,7 @@
                     app:layout_constraintTop_toTopOf="@+id/ivWeather" />
 
                 <ImageView
-                    android:id="@+id/ivHeart"
+                    android:id="@+id/ivWishlist"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:src="@drawable/ic_launcher_wishlist_icon"
