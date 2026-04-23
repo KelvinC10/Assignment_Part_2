@@ -19,7 +19,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_REAL_GOOGLE_MAPS_API_KEY" />
+            android:value="AIzaSyA8sgoY3sFJ0DfHRqh5xlERvfxU3iHufTg" />
 
         <activity
             android:name=".ChatActivity"
