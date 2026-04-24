@@ -12,6 +12,7 @@ import java.util.List;
 
 public class FavouriteManager {
     // These still hold the items while the app is running
+    // Change these from public to private!
     public static List<LocationModel> favLocations = new ArrayList<>();
     public static List<LocationModel> favFoods = new ArrayList<>();
 

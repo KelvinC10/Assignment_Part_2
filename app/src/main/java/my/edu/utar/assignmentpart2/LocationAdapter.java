@@ -62,24 +62,35 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
             holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_icon);
         }
 
+        // --- UPDATED: Crash-Proof Heart Click Logic ---
         holder.ivHeartIcon.setOnClickListener(v -> {
+            // Safety Check: Stop if the user clicks too fast and the item is already being removed
+            int currentPos = holder.getAdapterPosition();
+            if (currentPos == RecyclerView.NO_POSITION) return;
+
             if (itemType.equals("Location")) {
                 if (FavouriteManager.isFavLocation(location.getName())) {
-                    FavouriteManager.favLocations.removeIf(loc -> loc.getName().equals(location.getName()));
+                    FavouriteManager.removeLocation(location.getName());
                     holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_icon);
                     Toast.makeText(context, "Removed from Favourites", Toast.LENGTH_SHORT).show();
+
+                    // Tell the visual list that the data has shrunk so it doesn't crash!
+                    notifyDataSetChanged();
                 } else {
-                    FavouriteManager.favLocations.add(location);
+                    FavouriteManager.addLocation(location);
                     holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_fill_icon);
                     Toast.makeText(context, "Added to Favourites", Toast.LENGTH_SHORT).show();
                 }
             } else if (itemType.equals("Food")) {
                 if (FavouriteManager.isFavFood(location.getName())) {
-                    FavouriteManager.favFoods.removeIf(loc -> loc.getName().equals(location.getName()));
+                    FavouriteManager.removeFood(location.getName());
                     holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_icon);
                     Toast.makeText(context, "Removed from Favourites", Toast.LENGTH_SHORT).show();
+
+                    // Tell the visual list that the data has shrunk so it doesn't crash!
+                    notifyDataSetChanged();
                 } else {
-                    FavouriteManager.favFoods.add(location);
+                    FavouriteManager.addFood(location);
                     holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_fill_icon);
                     Toast.makeText(context, "Added to Favourites", Toast.LENGTH_SHORT).show();
                 }
