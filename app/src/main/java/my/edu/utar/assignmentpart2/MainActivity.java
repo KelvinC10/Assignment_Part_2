@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
         setupBottomNavigation();
 
         // --- Setup Favourite Heart Icon Click ---
-        ImageView ivHeart = findViewById(R.id.ivWishlist);
+        ImageView ivHeart = findViewById(R.id.ivHeart);
         ivHeart.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, FavouriteList.class);
             startActivity(intent);
