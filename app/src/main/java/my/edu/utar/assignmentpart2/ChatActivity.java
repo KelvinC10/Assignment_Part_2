@@ -18,6 +18,11 @@ import com.google.firebase.ai.java.GenerativeModelFutures;
 import com.google.firebase.ai.type.Content;
 import com.google.firebase.ai.type.GenerateContentResponse;
 import com.google.firebase.ai.type.GenerativeBackend;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -25,6 +30,10 @@ public class ChatActivity extends AppCompatActivity {
     private Button btnSend;
     private TextView tvReply;
     private GenerativeModelFutures model;
+    private FirebaseFirestore db;
+
+    // Use Set to avoid duplicate places from multiple collections
+    private final Set<String> placeLines = new LinkedHashSet<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,12 +44,49 @@ public class ChatActivity extends AppCompatActivity {
         btnSend = findViewById(R.id.btnSend);
         tvReply = findViewById(R.id.tvReply);
 
+        db = FirebaseFirestore.getInstance();
+
         GenerativeModel ai = FirebaseAI.getInstance(GenerativeBackend.googleAI())
                 .generativeModel("gemini-2.5-flash");
-
         model = GenerativeModelFutures.from(ai);
 
+        loadAllPlaceData();
+
         btnSend.setOnClickListener(v -> sendPrompt());
+    }
+
+    private void loadAllPlaceData() {
+        loadCollection("Best Attraction Places");
+        loadCollection("Local Recommendation Places");
+        loadCollection("Food");
+        loadCollection("Location Best Attraction Places");
+        loadCollection("Location Local Recommendation Places");
+        loadCollection("Food Page Food");
+    }
+
+    private void loadCollection(String collectionName) {
+        db.collection(collectionName).get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        String name = document.getString("name");
+                        String city = document.getString("city");
+                        String description = document.getString("description");
+
+                        if (name != null && city != null && description != null) {
+                            String shortDescription = description.trim();
+
+                            // Keep prompt shorter so AI performs better
+                            if (shortDescription.length() > 100) {
+                                shortDescription = shortDescription.substring(0, 100) + "...";
+                            }
+
+                            placeLines.add("- " + name + ", " + city + ", " + shortDescription);
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Optional: you can show error or ignore silently
+                });
     }
 
     private void sendPrompt() {
@@ -54,30 +100,26 @@ public class ChatActivity extends AppCompatActivity {
         btnSend.setEnabled(false);
         tvReply.setText("Thinking...");
 
-        String placeData =
-                "Known places in this app:\n" +
-                        "- Lou Wong, Ipoh, famous for bean sprout chicken\n" +
-                        "- Nam Heong White Coffee, Ipoh, traditional white coffee cafe\n" +
-                        "- Plan B, Ipoh, modern cafe for brunch and coffee\n" +
-                        "- Burps & Giggles, Ipoh, vintage cafe with desserts and coffee\n" +
-                        "- Villa Seafood Restaurant, Lumut, seafood restaurant known for Thai-style seafood\n" +
-                        "- Pangkor Island, Lumut, tropical island attraction\n" +
-                        "- Taiping Lake Gardens, Taiping, scenic public park\n" +
-                        "- Taiping Zoo & Night Safari, Taiping, zoo attraction\n" +
-                        "- Kellie's Castle, Batu Gajah, historic mansion attraction\n" +
-                        "- Leaning Tower, Teluk Intan, iconic landmark\n" +
-                        "- Victoria Bridge, Kuala Kangsar, historic bridge\n" +
-                        "- Lumut Waterfront, Lumut, seaside attraction\n" +
-                        "- Lata Kinjang Waterfall, Tapah, waterfall attraction\n" +
-                        "- Gunung Lang Recreational Park, Ipoh, nature park\n" +
-                        "- Sitiawan Mangrove Park, Sitiawan, mangrove nature attraction\n";
+        StringBuilder placeDataBuilder = new StringBuilder();
+        placeDataBuilder.append("Known places in this app:\n");
+
+        if (placeLines.isEmpty()) {
+            placeDataBuilder.append("- No place data loaded yet.\n");
+        } else {
+            for (String line : placeLines) {
+                placeDataBuilder.append(line).append("\n");
+            }
+        }
+
+        String placeData = placeDataBuilder.toString();
 
         String promptText =
                 "You are a helpful Perak tourism assistant. " +
-                        "Answer briefly and clearly. " +
-                        "Use the known places below when giving recommendations. " +
-                        "Only answer about Perak tourism. " +
-                        "If possible, recommend places from the list below.\n\n" +
+                        "Answer clearly and briefly. " +
+                        "Prefer recommending places and foods from the known app data below. " +
+                        "If relevant, you may also mention other well-known places or foods in Perak. " +
+                        "Try to match the user's request by city, food type, or attraction type. " +
+                        "If the user asks something outside Perak, say you only support Perak tourism.\n\n" +
                         placeData + "\n" +
                         "User question: " + userQuestion;
 
