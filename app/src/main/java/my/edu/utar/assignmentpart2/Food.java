@@ -73,6 +73,11 @@ public class Food extends AppCompatActivity {
         }
 
         handleFoodIntent();
+
+        // --- NEW: Force the list to refresh its heart icons! ---
+        if (adapterFood != null) {
+            adapterFood.notifyDataSetChanged();
+        }
     }
 
     private void handleFoodIntent() {

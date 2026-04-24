@@ -89,6 +89,11 @@ public class Location extends AppCompatActivity {
         // Try to scroll if data is already cached
         checkAndScroll("Best");
         checkAndScroll("Local");
+
+        // --- NEW: Force the lists to refresh their heart icons! ---
+        if (adapterBest != null) adapterBest.notifyDataSetChanged();
+        if (adapterLocal != null) adapterLocal.notifyDataSetChanged();
+
     }
 
     private void fetchLocationData() {
