@@ -11,12 +11,12 @@ public class WeatherResponse {
     @SerializedName("weather")
     public List<Weather> weather;
 
-    public class Main {
+    public static class Main {
         @SerializedName("temp")
         public float temp;
     }
 
-    public class Weather {
+    public static class Weather {
         @SerializedName("description")
         public String description;
     }
