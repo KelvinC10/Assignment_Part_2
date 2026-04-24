@@ -14,26 +14,38 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class AI extends AppCompatActivity {
 
-    private Button btnOpenChatbot;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_ai);
 
+        // Handle System Window Insets (Padding for status/navigation bars)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        btnOpenChatbot = findViewById(R.id.btnOpenChatbot);
+        // 1. Setup the "Start Chatting" Button
+        Button btnOpenChatbot = findViewById(R.id.btnOpenChatbot);
         btnOpenChatbot.setOnClickListener(v -> {
             Intent intent = new Intent(AI.this, ChatActivity.class);
             startActivity(intent);
         });
 
+        // 2. Setup the "Back to Dashboard" Button
+        Button btnBackToDashboard = findViewById(R.id.btnBackToDashboard);
+        btnBackToDashboard.setOnClickListener(v -> {
+            // Intent to go back to MainActivity (Dashboard)
+            Intent intent = new Intent(AI.this, MainActivity.class);
+            // Flags to ensure we don't keep multiple copies of MainActivity open
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            finish(); // Closes the AI activity
+        });
+
+        // 3. Setup Bottom Navigation
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_AI);
 
