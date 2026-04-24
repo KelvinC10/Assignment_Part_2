@@ -1,11 +1,14 @@
 package my.edu.utar.assignmentpart2;
 
 import android.os.Bundle;
-import android.view.View;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.IOException;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -18,8 +21,7 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView weatherTextView;
     private Button getWeatherButton;
 
-    // Replace this with your actual OpenWeatherMap API key
-    private static final String API_KEY = "YOUR_API_KEY_HERE";
+    private static final String API_KEY = "PUT_YOUR_OPENWEATHER_API_KEY_HERE";
     private static final String BASE_URL = "https://api.openweathermap.org/data/2.5/";
 
     @Override
@@ -30,12 +32,7 @@ public class WeatherActivity extends AppCompatActivity {
         weatherTextView = findViewById(R.id.weatherTextView);
         getWeatherButton = findViewById(R.id.getWeatherButton);
 
-        getWeatherButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                fetchWeatherData();
-            }
-        });
+        getWeatherButton.setOnClickListener(v -> fetchWeatherData());
     }
 
     private void fetchWeatherData() {
@@ -46,26 +43,46 @@ public class WeatherActivity extends AppCompatActivity {
 
         WeatherService service = retrofit.create(WeatherService.class);
 
-        // Fetching weather specifically for Kampar
-        Call<WeatherResponse> call = service.getCurrentWeather("Kampar,my", API_KEY, "metric");
+        Call<WeatherResponse> call =
+                service.getCurrentWeather("Kampar,MY", API_KEY, "metric");
 
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    float temperature = response.body().main.temp;
-                    String description = response.body().weather.get(0).description;
+                    WeatherResponse weatherResponse = response.body();
 
-                    String result = "Kampar: " + temperature + "°C\n" + description;
-                    weatherTextView.setText(result);
+                    if (weatherResponse.main != null &&
+                            weatherResponse.weather != null &&
+                            !weatherResponse.weather.isEmpty()) {
+
+                        float temperature = weatherResponse.main.temp;
+                        String description = weatherResponse.weather.get(0).description;
+
+                        weatherTextView.setText("Kampar: " + temperature + "°C\n" + description);
+                    } else {
+                        weatherTextView.setText("Weather data is incomplete.");
+                    }
+
                 } else {
-                    weatherTextView.setText("Failed to get data. Check API Key.");
+                    try {
+                        String error = response.errorBody() != null
+                                ? response.errorBody().string()
+                                : "Unknown error";
+
+                        Log.e("WEATHER_ERROR", error);
+                        weatherTextView.setText("Failed to get weather.\nCheck API key or city name.");
+
+                    } catch (IOException e) {
+                        weatherTextView.setText("Failed to read error response.");
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                Toast.makeText(WeatherActivity.this, "Network error", Toast.LENGTH_SHORT).show();
+                Log.e("WEATHER_FAILURE", "Network error", t);
+                Toast.makeText(WeatherActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
