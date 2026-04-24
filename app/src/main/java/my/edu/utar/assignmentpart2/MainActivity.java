@@ -101,6 +101,9 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, WeatherActivity.class);
             startActivity(intent);
         });
+
+        // Load saved favorites from local phone storage
+        FavouriteManager.init(this);
     }
 
     private void setupRecyclerViews() {
