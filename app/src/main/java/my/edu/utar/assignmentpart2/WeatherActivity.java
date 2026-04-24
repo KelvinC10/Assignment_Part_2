@@ -81,7 +81,17 @@ public class WeatherActivity extends AppCompatActivity {
 
         fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
             if (location != null) {
-                getCityFromLocation(location);
+                double lat = location.getLatitude();
+                double lon = location.getLongitude();
+
+                // Check if location is within Malaysia bounds
+                boolean inMalaysia = (lat >= 0.8 && lat <= 7.5) && (lon >= 99.6 && lon <= 119.3);
+
+                if (inMalaysia) {
+                    getCityFromLocation(location);
+                } else {
+                    weatherTextView.setText("Location detected outside Malaysia.\nPlease test on a real device or set emulator location manually.");
+                }
             } else {
                 weatherTextView.setText("Could not detect location.\nPlease enable GPS and try again.");
             }
