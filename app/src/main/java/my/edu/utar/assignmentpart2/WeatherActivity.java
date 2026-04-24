@@ -21,7 +21,7 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView weatherTextView;
     private Button getWeatherButton;
 
-    private static final String API_KEY = "PUT_YOUR_OPENWEATHER_API_KEY_HERE";
+    private static final String API_KEY = "your_real_openweathermap_key";
     private static final String BASE_URL = "https://api.openweathermap.org/data/2.5/";
 
     @Override
@@ -44,7 +44,7 @@ public class WeatherActivity extends AppCompatActivity {
         WeatherService service = retrofit.create(WeatherService.class);
 
         Call<WeatherResponse> call =
-                service.getCurrentWeather("Kampar,MY", API_KEY, "metric");
+                service.getCurrentWeather("Kampar", API_KEY, "metric");
 
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
