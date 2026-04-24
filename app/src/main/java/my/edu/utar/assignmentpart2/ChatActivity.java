@@ -3,6 +3,7 @@ package my.edu.utar.assignmentpart2;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton; // Added for the arrow
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -29,10 +30,10 @@ public class ChatActivity extends AppCompatActivity {
     private EditText etPrompt;
     private Button btnSend;
     private TextView tvReply;
+    private ImageButton btnBackArrow; // New variable
     private GenerativeModelFutures model;
     private FirebaseFirestore db;
 
-    // Use Set to avoid duplicate places from multiple collections
     private final Set<String> placeLines = new LinkedHashSet<>();
 
     @Override
@@ -40,12 +41,19 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        // Initialize UI Elements
         etPrompt = findViewById(R.id.etPrompt);
         btnSend = findViewById(R.id.btnSend);
         tvReply = findViewById(R.id.tvReply);
+        btnBackArrow = findViewById(R.id.btnBackArrow); // Initialize the arrow
 
+        // Back Arrow Logic: Go back to AI Travel Assistant screen
+        btnBackArrow.setOnClickListener(v -> {
+            finish();
+        });
+
+        // Initialize Firebase and Gemini AI
         db = FirebaseFirestore.getInstance();
-
         GenerativeModel ai = FirebaseAI.getInstance(GenerativeBackend.googleAI())
                 .generativeModel("gemini-2.5-flash");
         model = GenerativeModelFutures.from(ai);
@@ -74,18 +82,15 @@ public class ChatActivity extends AppCompatActivity {
 
                         if (name != null && city != null && description != null) {
                             String shortDescription = description.trim();
-
-                            // Keep prompt shorter so AI performs better
                             if (shortDescription.length() > 100) {
                                 shortDescription = shortDescription.substring(0, 100) + "...";
                             }
-
                             placeLines.add("- " + name + ", " + city + ", " + shortDescription);
                         }
                     }
                 })
                 .addOnFailureListener(e -> {
-                    // Optional: you can show error or ignore silently
+                    // Silently fail or log error
                 });
     }
 
