@@ -1,23 +1,20 @@
 package my.edu.utar.assignmentpart2;
 
 import com.google.gson.annotations.SerializedName;
-import java.util.List;
 
 public class WeatherResponse {
 
-    @SerializedName("main")
-    public Main main;
+    @SerializedName("current_weather")
+    public CurrentWeather current_weather;
 
-    @SerializedName("weather")
-    public List<Weather> weather;
+    public static class CurrentWeather {
+        @SerializedName("temperature")
+        public float temperature;
 
-    public static class Main {
-        @SerializedName("temp")
-        public float temp;
-    }
+        @SerializedName("weathercode")
+        public int weathercode;
 
-    public static class Weather {
-        @SerializedName("description")
-        public String description;
+        @SerializedName("windspeed")
+        public float windspeed;
     }
 }

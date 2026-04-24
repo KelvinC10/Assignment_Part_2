@@ -5,10 +5,11 @@ import retrofit2.http.GET;
 import retrofit2.http.Query;
 
 public interface WeatherService {
-    @GET("weather")
+
+    @GET("forecast")
     Call<WeatherResponse> getCurrentWeather(
-            @Query("q") String location,
-            @Query("appid") String apiKey,
-            @Query("units") String units
+            @Query("latitude") double latitude,
+            @Query("longitude") double longitude,
+            @Query("current_weather") boolean currentWeather
     );
 }
