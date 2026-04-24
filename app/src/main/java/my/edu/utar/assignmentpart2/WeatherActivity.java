@@ -69,6 +69,9 @@ public class WeatherActivity extends AppCompatActivity {
         weatherTextView  = findViewById(R.id.weatherTextView);
         getWeatherButton = findViewById(R.id.getWeatherButton);
 
+        // Back button
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
         getWeatherButton.setOnClickListener(v -> fetchAllCities());
     }
 
