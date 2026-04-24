@@ -1,25 +1,15 @@
 package my.edu.utar.assignmentpart2;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -31,10 +21,29 @@ public class WeatherActivity extends AppCompatActivity {
 
     private TextView weatherTextView;
     private Button getWeatherButton;
-    private FusedLocationProviderClient fusedLocationClient;
 
     private static final String BASE_URL = "https://api.open-meteo.com/v1/";
-    private static final int LOCATION_PERMISSION_REQUEST = 1001;
+
+    private static final double[][] CITIES = {
+            {4.5975, 101.0901},  // Ipoh
+            {4.3241, 101.1357},  // Kampar
+            {4.8500, 100.7333},  // Taiping
+            {4.0267, 101.0228},  // Teluk Intan
+            {4.7667, 100.9333},  // Kuala Kangsar
+            {4.2167, 100.7000},  // Sitiawan
+            {4.4667, 101.0333},  // Batu Gajah
+            {4.2333, 100.6167},  // Lumut
+            {5.0167, 101.0333},  // Lenggong
+            {4.6833, 101.1500},  // Sungai Siput
+    };
+
+    private static final String[] CITY_NAMES = {
+            "Ipoh", "Kampar", "Taiping", "Teluk Intan",
+            "Kuala Kangsar", "Sitiawan", "Batu Gajah",
+            "Lumut", "Lenggong", "Sungai Siput"
+    };
+
+    private final Map<String, String> resultsMap = new LinkedHashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,121 +52,69 @@ public class WeatherActivity extends AppCompatActivity {
 
         weatherTextView = findViewById(R.id.weatherTextView);
         getWeatherButton = findViewById(R.id.getWeatherButton);
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        getWeatherButton.setOnClickListener(v -> checkLocationPermission());
+        getWeatherButton.setOnClickListener(v -> fetchAllCities());
     }
 
-    private void checkLocationPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Ask for permission if not granted
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST);
-        } else {
-            getUserLocation();
-        }
-    }
+    private void fetchAllCities() {
+        weatherTextView.setText("Loading weather for Perak...");
+        resultsMap.clear();
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_PERMISSION_REQUEST &&
-                grantResults.length > 0 &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            getUserLocation();
-        } else {
-            Toast.makeText(this, "Location permission denied.", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void getUserLocation() {
-        weatherTextView.setText("Detecting your location...");
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) return;
-
-        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-            if (location != null) {
-                double lat = location.getLatitude();
-                double lon = location.getLongitude();
-
-                // Check if location is within Malaysia bounds
-                boolean inMalaysia = (lat >= 0.8 && lat <= 7.5) && (lon >= 99.6 && lon <= 119.3);
-
-                if (inMalaysia) {
-                    getCityFromLocation(location);
-                } else {
-                    weatherTextView.setText("Location detected outside Malaysia.\nPlease test on a real device or set emulator location manually.");
-                }
-            } else {
-                weatherTextView.setText("Could not detect location.\nPlease enable GPS and try again.");
-            }
-        });
-    }
-
-    private void getCityFromLocation(Location location) {
-        double latitude  = location.getLatitude();
-        double longitude = location.getLongitude();
-
-        // Convert GPS coordinates to city name
-        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-        try {
-            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
-            String cityName = "Your Location";
-            if (addresses != null && !addresses.isEmpty()) {
-                Address address = addresses.get(0);
-                // Try to get city, fallback to subAdmin or state
-                if (address.getLocality() != null) {
-                    cityName = address.getLocality();
-                } else if (address.getSubAdminArea() != null) {
-                    cityName = address.getSubAdminArea();
-                } else if (address.getAdminArea() != null) {
-                    cityName = address.getAdminArea();
-                }
-            }
-            fetchWeather(latitude, longitude, cityName);
-        } catch (IOException e) {
-            fetchWeather(latitude, longitude, "Your Location");
-        }
-    }
-
-    private void fetchWeather(double latitude, double longitude, String cityName) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
         WeatherService service = retrofit.create(WeatherService.class);
-        Call<WeatherResponse> call = service.getCurrentWeather(latitude, longitude, true);
+        AtomicInteger completed = new AtomicInteger(0);
 
-        call.enqueue(new Callback<WeatherResponse>() {
-            @Override
-            public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    WeatherResponse.CurrentWeather cw = response.body().current_weather;
-                    if (cw != null) {
-                        weatherTextView.setText(
-                                "📍 " + cityName + "\n\n" +
-                                        "🌡 Temperature : " + cw.temperature + " °C\n" +
-                                        "🌤 Condition   : " + getWeatherCondition(cw.weathercode) + "\n" +
-                                        "💨 Wind Speed  : " + cw.windspeed + " km/h"
-                        );
+        for (int i = 0; i < CITIES.length; i++) {
+            final String cityName = CITY_NAMES[i];
+            Call<WeatherResponse> call = service.getCurrentWeather(CITIES[i][0], CITIES[i][1], true);
+
+            call.enqueue(new Callback<WeatherResponse>() {
+                @Override
+                public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        WeatherResponse.CurrentWeather cw = response.body().current_weather;
+                        if (cw != null) {
+                            resultsMap.put(cityName,
+                                    "📍 " + cityName + "\n" +
+                                            "   🌡 " + cw.temperature + " °C  |  " + getWeatherCondition(cw.weathercode) + "\n" +
+                                            "   💨 Wind: " + cw.windspeed + " km/h\n"
+                            );
+                        }
                     } else {
-                        weatherTextView.setText("Weather data is incomplete.");
+                        resultsMap.put(cityName, "📍 " + cityName + "\n   ❌ Failed to load\n");
                     }
-                } else {
-                    weatherTextView.setText("Failed to get weather.\nPlease try again.");
+
+                    if (completed.incrementAndGet() == CITIES.length) {
+                        displayResults();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<WeatherResponse> call, Throwable t) {
+                    resultsMap.put(cityName, "📍 " + cityName + "\n   ❌ Network error\n");
+                    if (completed.incrementAndGet() == CITIES.length) {
+                        displayResults();
+                    }
+                    Toast.makeText(WeatherActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void displayResults() {
+        runOnUiThread(() -> {
+            StringBuilder sb = new StringBuilder("🌤 Perak Weather Report\n");
+            sb.append("─────────────────────\n\n");
+            for (String city : CITY_NAMES) {
+                if (resultsMap.containsKey(city)) {
+                    sb.append(resultsMap.get(city)).append("\n");
                 }
             }
-
-            @Override
-            public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                Toast.makeText(WeatherActivity.this,
-                        "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
-            }
+            weatherTextView.setText(sb.toString());
         });
     }
 
