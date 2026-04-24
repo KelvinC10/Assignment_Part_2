@@ -1,13 +1,19 @@
 package my.edu.utar.assignmentpart2;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,6 +25,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class WeatherActivity extends AppCompatActivity {
 
+    private LinearLayout weatherContainer;
+    private TextView tvLastUpdated;
     private TextView weatherTextView;
     private Button getWeatherButton;
 
@@ -43,21 +51,32 @@ public class WeatherActivity extends AppCompatActivity {
             "Lumut", "Lenggong", "Sungai Siput"
     };
 
-    private final Map<String, String> resultsMap = new LinkedHashMap<>();
+    private static class WeatherData {
+        float temperature;
+        int weathercode;
+        float windspeed;
+    }
+
+    private final Map<String, WeatherData> resultsMap = new LinkedHashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
 
-        weatherTextView = findViewById(R.id.weatherTextView);
+        weatherContainer = findViewById(R.id.weatherContainer);
+        tvLastUpdated    = findViewById(R.id.tvLastUpdated);
+        weatherTextView  = findViewById(R.id.weatherTextView);
         getWeatherButton = findViewById(R.id.getWeatherButton);
 
         getWeatherButton.setOnClickListener(v -> fetchAllCities());
     }
 
     private void fetchAllCities() {
-        weatherTextView.setText("Loading weather for Perak...");
+        getWeatherButton.setEnabled(false);
+        getWeatherButton.setText("Loading...");
+        weatherTextView.setVisibility(View.VISIBLE);
+        weatherTextView.setText("Fetching weather for all Perak cities...");
         resultsMap.clear();
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -78,16 +97,13 @@ public class WeatherActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null) {
                         WeatherResponse.CurrentWeather cw = response.body().current_weather;
                         if (cw != null) {
-                            resultsMap.put(cityName,
-                                    "📍 " + cityName + "\n" +
-                                            "   🌡 " + cw.temperature + " °C  |  " + getWeatherCondition(cw.weathercode) + "\n" +
-                                            "   💨 Wind: " + cw.windspeed + " km/h\n"
-                            );
+                            WeatherData data  = new WeatherData();
+                            data.temperature  = cw.temperature;
+                            data.weathercode  = cw.weathercode;
+                            data.windspeed    = cw.windspeed;
+                            resultsMap.put(cityName, data);
                         }
-                    } else {
-                        resultsMap.put(cityName, "📍 " + cityName + "\n   ❌ Failed to load\n");
                     }
-
                     if (completed.incrementAndGet() == CITIES.length) {
                         displayResults();
                     }
@@ -95,11 +111,10 @@ public class WeatherActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                    resultsMap.put(cityName, "📍 " + cityName + "\n   ❌ Network error\n");
                     if (completed.incrementAndGet() == CITIES.length) {
                         displayResults();
                     }
-                    Toast.makeText(WeatherActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(WeatherActivity.this, "Error loading " + cityName, Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -107,28 +122,74 @@ public class WeatherActivity extends AppCompatActivity {
 
     private void displayResults() {
         runOnUiThread(() -> {
-            StringBuilder sb = new StringBuilder("🌤 Perak Weather Report\n");
-            sb.append("─────────────────────\n\n");
-            for (String city : CITY_NAMES) {
-                if (resultsMap.containsKey(city)) {
-                    sb.append(resultsMap.get(city)).append("\n");
-                }
+            weatherTextView.setVisibility(View.GONE);
+
+            // Remove old cards
+            if (weatherContainer.getChildCount() > 1) {
+                weatherContainer.removeViews(1, weatherContainer.getChildCount() - 1);
             }
-            weatherTextView.setText(sb.toString());
+
+            LayoutInflater inflater = LayoutInflater.from(this);
+
+            for (String cityName : CITY_NAMES) {
+                WeatherData data = resultsMap.get(cityName);
+                View card = inflater.inflate(R.layout.item_weather_card, weatherContainer, false);
+
+                TextView tvIcon = card.findViewById(R.id.tvWeatherIcon);
+                TextView tvCity = card.findViewById(R.id.tvCityName);
+                TextView tvCond = card.findViewById(R.id.tvCondition);
+                TextView tvWind = card.findViewById(R.id.tvWind);
+                TextView tvTemp = card.findViewById(R.id.tvTemperature);
+
+                if (data != null) {
+                    tvIcon.setText(getWeatherIcon(data.weathercode));
+                    tvCity.setText("📍 " + cityName);
+                    tvCond.setText(getWeatherCondition(data.weathercode));
+                    tvWind.setText("💨 Wind: " + data.windspeed + " km/h");
+                    tvTemp.setText((int) data.temperature + "°");
+                } else {
+                    tvIcon.setText("❌");
+                    tvCity.setText("📍 " + cityName);
+                    tvCond.setText("Failed to load");
+                    tvWind.setText("");
+                    tvTemp.setText("--°");
+                }
+
+                weatherContainer.addView(card);
+            }
+
+            String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date());
+            tvLastUpdated.setText("Last updated: " + time);
+            getWeatherButton.setEnabled(true);
+            getWeatherButton.setText("🔄  Refresh Perak Weather");
         });
     }
 
+    private String getWeatherIcon(int code) {
+        if (code == 0)        return "☀️";
+        else if (code <= 2)   return "⛅";
+        else if (code == 3)   return "☁️";
+        else if (code <= 49)  return "🌫️";
+        else if (code <= 59)  return "🌦️";
+        else if (code <= 69)  return "🌧️";
+        else if (code <= 79)  return "🌨️";
+        else if (code <= 82)  return "🌧️";
+        else if (code <= 86)  return "🌨️";
+        else if (code <= 99)  return "⛈️";
+        else                  return "🌡️";
+    }
+
     private String getWeatherCondition(int code) {
-        if (code == 0)        return "Clear Sky ☀️";
-        else if (code <= 2)   return "Partly Cloudy ⛅";
-        else if (code == 3)   return "Overcast ☁️";
-        else if (code <= 49)  return "Foggy 🌫️";
-        else if (code <= 59)  return "Drizzle 🌦️";
-        else if (code <= 69)  return "Rainy 🌧️";
-        else if (code <= 79)  return "Snowy 🌨️";
-        else if (code <= 82)  return "Rain Showers 🌧️";
-        else if (code <= 86)  return "Snow Showers 🌨️";
-        else if (code <= 99)  return "Thunderstorm ⛈️";
+        if (code == 0)        return "Clear Sky";
+        else if (code <= 2)   return "Partly Cloudy";
+        else if (code == 3)   return "Overcast";
+        else if (code <= 49)  return "Foggy";
+        else if (code <= 59)  return "Drizzle";
+        else if (code <= 69)  return "Rainy";
+        else if (code <= 79)  return "Snowy";
+        else if (code <= 82)  return "Rain Showers";
+        else if (code <= 86)  return "Snow Showers";
+        else if (code <= 99)  return "Thunderstorm";
         else                  return "Unknown";
     }
 }
