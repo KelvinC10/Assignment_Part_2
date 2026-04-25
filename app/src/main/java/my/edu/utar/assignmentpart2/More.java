@@ -25,12 +25,14 @@ public class More extends AppCompatActivity {
             return insets;
         });
 
+        // Navigation bar for switching between Activities
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_more);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
+            // If current tab is selected, remain on the same page
             if (id == R.id.nav_more) {
                 return true;
             } else if (id == R.id.nav_home) {

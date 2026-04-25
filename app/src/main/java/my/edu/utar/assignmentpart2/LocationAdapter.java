@@ -22,6 +22,7 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
     private Context context;
     private String itemType; // "Location" or "Food"
 
+    // Constructor to pass data into the adapter
     public LocationAdapter(Context context, List<LocationModel> locationList, String itemType) {
         this.context = context;
         this.locationList = locationList;
@@ -31,6 +32,7 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Link the adapter to the XML layout for each row
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_location_vertical, parent, false);
         return new ViewHolder(view);
@@ -38,17 +40,20 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        // Get the specific place data for the current row
         LocationModel location = locationList.get(position);
 
         holder.tvPlaceName.setText(location.getName());
         holder.tvPlaceCity.setText(location.getCity());
         holder.tvDescription.setText(location.getDescription());
 
+        // Load the image from the internet using Glide library
         Glide.with(context)
                 .load(location.getImageUrl())
                 .placeholder(R.drawable.ic_launcher_background)
                 .into(holder.ivPlace);
 
+        // Check if this item is already in the user's favourite list
         boolean isFavourite = false;
         if (itemType.equals("Location")) {
             isFavourite = FavouriteManager.isFavLocation(location.getName());
@@ -56,13 +61,14 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
             isFavourite = FavouriteManager.isFavFood(location.getName());
         }
 
+        // Show a black heart if it is a favourite, or an empty heart if it is not
         if (isFavourite) {
             holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_fill_icon);
         } else {
             holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_icon);
         }
 
-        // --- UPDATED: Crash-Proof Heart Click Logic ---
+        // Logic for when the user clicks the Heart icon
         holder.ivHeartIcon.setOnClickListener(v -> {
             // Safety Check: Stop if the user clicks too fast and the item is already being removed
             int currentPos = holder.getAdapterPosition();
@@ -70,13 +76,15 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
 
             if (itemType.equals("Location")) {
                 if (FavouriteManager.isFavLocation(location.getName())) {
+                    // If already favourited, remove it
                     FavouriteManager.removeLocation(location.getName());
                     holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_icon);
                     Toast.makeText(context, "Removed from Favourites", Toast.LENGTH_SHORT).show();
 
-                    // Tell the visual list that the data has shrunk so it doesn't crash!
-                    notifyDataSetChanged();
+
+                    notifyDataSetChanged(); // Refresh list display
                 } else {
+                    // If not favourited, add it
                     FavouriteManager.addLocation(location);
                     holder.ivHeartIcon.setImageResource(R.drawable.ic_launcher_wishlist_fill_icon);
                     Toast.makeText(context, "Added to Favourites", Toast.LENGTH_SHORT).show();
@@ -97,6 +105,7 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
             }
         });
 
+        // Logic for when the user clicks the Map icon
         holder.ivMapIcon.setOnClickListener(v -> {
             Intent intent = new Intent(context, MapsActivity.class);
             intent.putExtra("placeName", location.getName());
@@ -106,10 +115,10 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
             context.startActivity(intent);
         });
 
-        // --- NEW: Make the whole card clickable to open DetailsActivity ---
+        // Logic for when the user clicks the whole card to see more details
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, DetailsActivity.class);
-            // Pass all the data
+            // Pass all the data to the Details screen
             intent.putExtra("name", location.getName());
             intent.putExtra("city", location.getCity());
             intent.putExtra("description", location.getDescription());
@@ -124,6 +133,7 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
 
     @Override
     public int getItemCount() {
+        // Tell the list how many items to show
         return locationList.size();
     }
 
@@ -131,6 +141,7 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
         ImageView ivPlace, ivMapIcon, ivHeartIcon;
         TextView tvPlaceName, tvPlaceCity, tvDescription;
 
+        // This class finds and holds the IDs from the XML layout
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             ivPlace = itemView.findViewById(R.id.ivPlaceVertical);

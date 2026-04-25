@@ -25,6 +25,7 @@ public class FavouriteList extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Enable full-screen display
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_favourite_list);
 
@@ -34,6 +35,7 @@ public class FavouriteList extends AppCompatActivity {
             return insets;
         });
 
+        // Initialize buttons and the RecyclerView list
         btnToggleLocation = findViewById(R.id.btnToggleLocation);
         btnToggleFood = findViewById(R.id.btnToggleFood);
         rvFavouriteList = findViewById(R.id.rvFavouriteList);
@@ -46,12 +48,13 @@ public class FavouriteList extends AppCompatActivity {
         btnToggleLocation.setOnClickListener(v -> showLocationFavourites());
         btnToggleFood.setOnClickListener(v -> showFoodFavourites());
 
-        // --- NEW: Bottom Navigation Logic ---
+        // Bottom Navigation Logic
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
 
-        // Since FavouriteList isn't one of the 4 main tabs, we uncheck all of them so none look "active"
+        // Since FavouriteList isn't one of the 4 main tabs, uncheck all of them so none look "active"
         bottomNavigationView.getMenu().setGroupCheckable(0, false, true);
 
+        // Navigation bar for switching between Activities
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_home) {
@@ -79,6 +82,7 @@ public class FavouriteList extends AppCompatActivity {
         });
     }
 
+    // Refreshes the list every time the user returns to this screen.
     @Override
     protected void onResume() {
         super.onResume();
@@ -87,6 +91,8 @@ public class FavouriteList extends AppCompatActivity {
         }
     }
 
+    // Logic to display favourite sightseeing locations.
+    // Updates button colors to show 'Locations' is active.
     private void showLocationFavourites() {
         // Active Button: Dark Grey Background, White Text
         btnToggleLocation.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#424242")));
@@ -96,10 +102,13 @@ public class FavouriteList extends AppCompatActivity {
         btnToggleFood.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#E0E0E0")));
         btnToggleFood.setTextColor(Color.BLACK);
 
+        // Load the saved locations into the list
         adapter = new LocationAdapter(this, FavouriteManager.favLocations, "Location");
         rvFavouriteList.setAdapter(adapter);
     }
 
+    // Logic to display favourite food items.
+    // Updates button colors to show 'Food' is active.
     private void showFoodFavourites() {
         // Active Button: Dark Grey Background, White Text
         btnToggleFood.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#424242")));
@@ -109,6 +118,7 @@ public class FavouriteList extends AppCompatActivity {
         btnToggleLocation.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#E0E0E0")));
         btnToggleLocation.setTextColor(Color.BLACK);
 
+        // Load the saved foods into the list
         adapter = new LocationAdapter(this, FavouriteManager.favFoods, "Food");
         rvFavouriteList.setAdapter(adapter);
     }

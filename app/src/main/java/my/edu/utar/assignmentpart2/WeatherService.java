@@ -6,6 +6,8 @@ import retrofit2.http.Query;
 
 public interface WeatherService {
 
+    // Interface for the Retrofit library to handle network requests.
+    // It defines the API endpoints and the parameters needed to get weather data.
     @GET("forecast")
     Call<WeatherResponse> getCurrentWeather(
             @Query("latitude") double latitude,

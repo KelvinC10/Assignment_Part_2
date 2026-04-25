@@ -17,7 +17,7 @@ public class AI extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        EdgeToEdge.enable(this); // Enable full-screen mode
         setContentView(R.layout.activity_ai);
 
 
@@ -27,31 +27,34 @@ public class AI extends AppCompatActivity {
             return insets;
         });
 
-
+        // Button Logic: Open the actual AI Chat interface
         Button btnOpenChatbot = findViewById(R.id.btnOpenChatbot);
         btnOpenChatbot.setOnClickListener(v -> {
             Intent intent = new Intent(AI.this, ChatActivity.class);
             startActivity(intent);
         });
 
-
+        // Button Logic: Return to the Home Activity
         Button btnBackToDashboard = findViewById(R.id.btnBackToDashboard);
         btnBackToDashboard.setOnClickListener(v -> {
 
             Intent intent = new Intent(AI.this, MainActivity.class);
 
+            // Flags ensure we don't create multiple copies of the Home screen
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
             finish();
         });
 
 
+        // Navigation Bar setup and highlight the AI tab
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_AI);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
+            // Navigation bar for switching between Activities
             if (id == R.id.nav_home) {
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 overridePendingTransition(0, 0);

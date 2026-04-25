@@ -34,6 +34,7 @@ public class ChatActivity extends AppCompatActivity {
     private GenerativeModelFutures model;
     private FirebaseFirestore db;
 
+    // A list to store unique descriptions of places to help the AI learn
     private final Set<String> placeLines = new LinkedHashSet<>();
 
     @Override
@@ -47,22 +48,24 @@ public class ChatActivity extends AppCompatActivity {
         tvReply = findViewById(R.id.tvReply);
         btnBackArrow = findViewById(R.id.btnBackArrow); // Initialize the arrow
 
-
+        // Close the chat and return to the previous screen when the arrow is clicked
         btnBackArrow.setOnClickListener(v -> {
             finish();
         });
 
-
+        // Setup Firebase and the AI Model (Gemini)
         db = FirebaseFirestore.getInstance();
         GenerativeModel ai = FirebaseAI.getInstance(GenerativeBackend.googleAI())
                 .generativeModel("gemini-2.5-flash");
         model = GenerativeModelFutures.from(ai);
 
+        // Prepare the AI by loading all tourism data into memory
         loadAllPlaceData();
 
         btnSend.setOnClickListener(v -> sendPrompt());
     }
 
+    // Triggers data downloads from all tourism and food collections.
     private void loadAllPlaceData() {
         loadCollection("Best Attraction Places");
         loadCollection("Local Recommendation Places");
@@ -72,6 +75,7 @@ public class ChatActivity extends AppCompatActivity {
         loadCollection("Food Page Food");
     }
 
+    // Downloads specific collection data and formats it for the AI to understand.
     private void loadCollection(String collectionName) {
         db.collection(collectionName).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -81,10 +85,12 @@ public class ChatActivity extends AppCompatActivity {
                         String description = document.getString("description");
 
                         if (name != null && city != null && description != null) {
+                            // Trim description so the AI prompt doesn't get too long
                             String shortDescription = description.trim();
                             if (shortDescription.length() > 100) {
                                 shortDescription = shortDescription.substring(0, 100) + "...";
                             }
+                            // Store the formatted info
                             placeLines.add("- " + name + ", " + city + ", " + shortDescription);
                         }
                     }
@@ -94,6 +100,7 @@ public class ChatActivity extends AppCompatActivity {
                 });
     }
 
+    // Sends the user's question and the app's data to the AI for a response
     private void sendPrompt() {
         String userQuestion = etPrompt.getText().toString().trim();
 
@@ -102,9 +109,11 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
 
+        // Disable button while waiting for the AI to "think"
         btnSend.setEnabled(false);
         tvReply.setText("Thinking...");
 
+        // Combine all loaded place data into one big text block for the AI
         StringBuilder placeDataBuilder = new StringBuilder();
         placeDataBuilder.append("Known places in this app:\n");
 
@@ -118,6 +127,7 @@ public class ChatActivity extends AppCompatActivity {
 
         String placeData = placeDataBuilder.toString();
 
+        // Create the instructions (System Prompt) for the AI
         String promptText =
                 "You are a helpful Perak tourism assistant. " +
                         "Answer clearly and briefly. " +
@@ -128,10 +138,12 @@ public class ChatActivity extends AppCompatActivity {
                         placeData + "\n" +
                         "User question: " + userQuestion;
 
+        // Build the final message for the AI model
         Content prompt = new Content.Builder()
                 .addText(promptText)
                 .build();
 
+        // Send the message and wait for the reply
         ListenableFuture<GenerateContentResponse> response = model.generateContent(prompt);
 
         Futures.addCallback(response, new FutureCallback<GenerateContentResponse>() {

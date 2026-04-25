@@ -26,9 +26,12 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+// Main landing page of the application.
+// Handles the dashboard display, global search functionality, and Firebase data retrieval.
+
 public class MainActivity extends AppCompatActivity {
 
-    // 1. All your variables are declared correctly here
+    // UI Components and Adapters
     private MainActivityAdapter adapterAttractions, adapterLocal, adapterFood;
     private List<LocationModel> listAttractions, listLocal, listFood;
     private RecyclerView rvAttractions, rvLocal, rvFood, rvSearch;
@@ -36,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
     private android.widget.LinearLayout llNoResult;
     private EditText etSearch;
     private SearchAdapter searchAdapter;
+
+    // Master lists to store all searchable data for the global search feature
     private List<LocationModel> masterSearchList = new ArrayList<>();
     private List<String> masterSearchTypes = new ArrayList<>();
 
@@ -52,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        // 1. Setup Date
+        // 1. Display Current Date
         TextView tvDate = findViewById(R.id.tvDate);
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy", Locale.getDefault());
@@ -60,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         String dateToShow = getString(R.string.date_format, currentDate);
         tvDate.setText(dateToShow);
 
-        // 2. Initialize Firebase
+        // Connect to Firebase Firestore
         db = FirebaseFirestore.getInstance();
 
         // Initialize Search Elements
@@ -72,42 +77,42 @@ public class MainActivity extends AppCompatActivity {
         searchAdapter = new SearchAdapter(this, new ArrayList<>(), new ArrayList<>());
         rvSearch.setAdapter(searchAdapter);
 
-        // Add the typing listener
+        // Activate search bar listeners and fetch background data for search
         setupSearchBar();
-
         fetchGlobalSearchData();
 
-        // 3. Setup THE THREE CATEGORIES
+        // Setup THE THREE CATEGORIES: Horizontal RecyclerViews
         setupRecyclerViews();
 
-        // 4. Fetch Data from your 3 Firestore Collections
-        // Make sure these collection names match your Firestore exactly!
+        // Fetch Data from Firestore Collections
         loadCollection("Best Attraction Places", listAttractions, adapterAttractions);
         loadCollection("Local Recommendation Places", listLocal, adapterLocal);
         loadCollection("Food", listFood, adapterFood);
 
-        // 5. Bottom Navigation Logic
+        // Bottom Navigation
         setupBottomNavigation();
 
-        // --- Setup Favourite Heart Icon Click ---
+        // Setup Favourite Heart(Wishlist) Icon Click
         ImageView ivHeart = findViewById(R.id.ivHeart);
         ivHeart.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, FavouriteList.class);
             startActivity(intent);
         });
 
+        // Setup Weather Icon Click
         View weatherButton = findViewById(R.id.ivWeather);
         weatherButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, WeatherActivity.class);
             startActivity(intent);
         });
 
-        // Load saved favorites from local phone storage
+        // Load saved favorites from local phone storage(SharedPreferences)
         FavouriteManager.init(this);
     }
 
+    // Setup horizontal list containers for Best Attractions, Local Recommendations, and Food.
     private void setupRecyclerViews() {
-        // --- Best Attractions ---
+        // Best Attractions
         listAttractions = new ArrayList<>();
         // Add "Best" as the second parameter
         adapterAttractions = new MainActivityAdapter(listAttractions, "Best");
@@ -115,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
         rvAttractions.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvAttractions.setAdapter(adapterAttractions);
 
-        // --- Local Recommendations ---
+        // Local Recommendations
         listLocal = new ArrayList<>();
         // Add "Local" as the second parameter
         adapterLocal = new MainActivityAdapter(listLocal, "Local");
@@ -123,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
         rvLocal.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvLocal.setAdapter(adapterLocal);
 
-        // --- Food ---
+        // Food
         listFood = new ArrayList<>();
         // Add "Food" as the second parameter
         adapterFood = new MainActivityAdapter(listFood, "Food");
@@ -132,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
         rvFood.setAdapter(adapterFood);
     }
 
+    // Fetch data from Firestore and update specific adapters.
     private void loadCollection(String collectionName, List<LocationModel> list, MainActivityAdapter adapter) {
         db.collection(collectionName).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -140,13 +146,14 @@ public class MainActivity extends AppCompatActivity {
                         LocationModel item = document.toObject(LocationModel.class);
                         list.add(item);
                     }
-                    adapter.notifyDataSetChanged();
+                    adapter.notifyDataSetChanged(); // Refresh UI after data download
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to load " + collectionName, Toast.LENGTH_SHORT).show();
                 });
     }
 
+    // Navigation bar for switching between Activities
     private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_home);
@@ -175,6 +182,8 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
     }
+
+    // Real time filter System
     private void setupSearchBar() {
         etSearch.addTextChangedListener(new android.text.TextWatcher() {
             @Override
@@ -182,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filterSearch(s.toString());
+                filterSearch(s.toString()); // Perform search filtering as user types
             }
 
             @Override
@@ -190,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // Compares user query against the master list and toggles UI visibility based on results.
     private void filterSearch(String query) {
         // If search bar is empty, hide everything
         if (query.trim().isEmpty()) {

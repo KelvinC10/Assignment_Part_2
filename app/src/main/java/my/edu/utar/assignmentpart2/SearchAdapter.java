@@ -21,6 +21,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     private List<LocationModel> searchList;
     private List<String> typeList; // Keeps track of whether it's a "Location" or "Food"
 
+    // Constructor to set up the initial search list and context
     public SearchAdapter(Context context, List<LocationModel> searchList, List<String> typeList) {
         this.context = context;
         this.searchList = searchList;
@@ -43,9 +44,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        // Get the specific item data and its type (Location/Food) for this row
         LocationModel item = searchList.get(position);
         String itemType = typeList.get(position);
 
+        // Display the name and city of the matching result
         holder.tvSearchName.setText(item.getName());
         holder.tvSearchCity.setText(item.getCity());
         Glide.with(context).load(item.getImageUrl()).placeholder(R.drawable.ic_launcher_background).into(holder.ivSearchImage);
@@ -66,9 +69,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
     @Override
     public int getItemCount() {
+        // Return the number of matching results found
         return searchList.size();
     }
 
+    // ViewHolder class to find and hold the UI elements for each search result.
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView ivSearchImage;
         TextView tvSearchName, tvSearchCity;

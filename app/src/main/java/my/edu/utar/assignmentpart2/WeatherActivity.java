@@ -30,6 +30,7 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView weatherTextView;
     private Button getWeatherButton;
 
+    // The base URL for the weather service API
     private static final String BASE_URL = "https://api.open-meteo.com/v1/";
 
     private static final double[][] CITIES = {
@@ -51,12 +52,14 @@ public class WeatherActivity extends AppCompatActivity {
             "Lumut", "Lenggong", "Sungai Siput"
     };
 
+    // Internal data class to hold the weather details for a single city.
     private static class WeatherData {
         float temperature;
         int weathercode;
         float windspeed;
     }
 
+    // A map to store the results of each city so they can be displayed together
     private final Map<String, WeatherData> resultsMap = new LinkedHashMap<>();
 
     @Override
@@ -75,25 +78,31 @@ public class WeatherActivity extends AppCompatActivity {
         getWeatherButton.setOnClickListener(v -> fetchAllCities());
     }
 
+    // Starts the network requests to get weather data for all listed Perak cities
     private void fetchAllCities() {
+        // Update UI to show loading state
         getWeatherButton.setEnabled(false);
         getWeatherButton.setText("Loading...");
         weatherTextView.setVisibility(View.VISIBLE);
         weatherTextView.setText("Fetching weather for all Perak cities...");
         resultsMap.clear();
 
+        // Setup Retrofit for networkin
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
         WeatherService service = retrofit.create(WeatherService.class);
+        // Counter to track when all city requests are finished
         AtomicInteger completed = new AtomicInteger(0);
 
         for (int i = 0; i < CITIES.length; i++) {
             final String cityName = CITY_NAMES[i];
+            // Create a network call for each city's coordinates
             Call<WeatherResponse> call = service.getCurrentWeather(CITIES[i][0], CITIES[i][1], true);
 
+            // Send the request in the background
             call.enqueue(new Callback<WeatherResponse>() {
                 @Override
                 public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
@@ -114,6 +123,7 @@ public class WeatherActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Call<WeatherResponse> call, Throwable t) {
+                    // If a request fails, we continue checking if others finished
                     if (completed.incrementAndGet() == CITIES.length) {
                         displayResults();
                     }
@@ -123,6 +133,7 @@ public class WeatherActivity extends AppCompatActivity {
         }
     }
 
+    // Creates and adds weather cards to the UI for each city.
     private void displayResults() {
         runOnUiThread(() -> {
             weatherTextView.setVisibility(View.GONE);
@@ -134,6 +145,7 @@ public class WeatherActivity extends AppCompatActivity {
 
             LayoutInflater inflater = LayoutInflater.from(this);
 
+            // Loop through each city and create a visual card
             for (String cityName : CITY_NAMES) {
                 WeatherData data = resultsMap.get(cityName);
                 View card = inflater.inflate(R.layout.item_weather_card, weatherContainer, false);
@@ -145,12 +157,14 @@ public class WeatherActivity extends AppCompatActivity {
                 TextView tvTemp = card.findViewById(R.id.tvTemperature);
 
                 if (data != null) {
+                    // Update card with real weather data
                     tvIcon.setText(getWeatherIcon(data.weathercode));
                     tvCity.setText("📍 " + cityName);
                     tvCond.setText(getWeatherCondition(data.weathercode));
                     tvWind.setText("💨 Wind: " + data.windspeed + " km/h");
                     tvTemp.setText((int) data.temperature + "°");
                 } else {
+                    // Show error state for cities that failed to load
                     tvIcon.setText("❌");
                     tvCity.setText("📍 " + cityName);
                     tvCond.setText("Failed to load");
@@ -161,6 +175,7 @@ public class WeatherActivity extends AppCompatActivity {
                 weatherContainer.addView(card);
             }
 
+            // Update the "Last Updated" timestamp
             String time = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(new Date());
             tvLastUpdated.setText("Last updated: " + time);
             getWeatherButton.setEnabled(true);
@@ -168,6 +183,7 @@ public class WeatherActivity extends AppCompatActivity {
         });
     }
 
+    // Maps the API weather code to a visual Emoji icon.
     private String getWeatherIcon(int code) {
         if (code == 0)        return "☀️";
         else if (code <= 2)   return "⛅";
@@ -182,6 +198,7 @@ public class WeatherActivity extends AppCompatActivity {
         else                  return "🌡️";
     }
 
+    // Maps the API weather code to a human-readable condition text.
     private String getWeatherCondition(int code) {
         if (code == 0)        return "Clear Sky";
         else if (code <= 2)   return "Partly Cloudy";

@@ -43,10 +43,11 @@ public class Location extends AppCompatActivity {
             return insets;
         });
 
+        // Initialize Firebase and the main scroll container
         db = FirebaseFirestore.getInstance();
         nestedScrollView = findViewById(R.id.nestedScrollView);
 
-        // 1. Setup RecyclerViews
+        // Setup RecyclerViews for 'Best Attractions' List
         rvBestVertical = findViewById(R.id.rvBestVertical);
         rvBestVertical.setLayoutManager(new LinearLayoutManager(this));
         rvBestVertical.setNestedScrollingEnabled(false);
@@ -54,6 +55,7 @@ public class Location extends AppCompatActivity {
         adapterBest = new LocationAdapter(this, listBest, "Location");
         rvBestVertical.setAdapter(adapterBest);
 
+        // Setup RecycleViews for 'Local Recommendations' List
         rvLocalVertical = findViewById(R.id.rvLocalVertical);
         rvLocalVertical.setLayoutManager(new LinearLayoutManager(this));
         rvLocalVertical.setNestedScrollingEnabled(false);
@@ -61,13 +63,14 @@ public class Location extends AppCompatActivity {
         adapterLocal = new LocationAdapter(this, listLocal, "Location");
         rvLocalVertical.setAdapter(adapterLocal);
 
-        // 2. Fetch Data
+        // Fetch Data from Firebase Firestore
         fetchLocationData();
 
-        // 3. Setup Bottom Navigation
+        // Setup Bottom Navigation
         setupBottomNavigation();
     }
 
+    // Called when a user clicks a location card from the Home screen(Main Activity)
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -76,27 +79,30 @@ public class Location extends AppCompatActivity {
         hasToasted = false;
     }
 
+    // Runs every time the user enters this screen.
+    // Ensures the navigation bar is correct and lists are refreshed.
     @Override
     protected void onResume() {
         super.onResume();
 
-        // Sync the Bottom Navigation highlight
+        // Highlight the 'Location' icon in the bottom menu
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         if (bottomNavigationView != null) {
             bottomNavigationView.setSelectedItemId(R.id.nav_location);
         }
 
-        // Try to scroll if data is already cached
+        // Check if the app needs to scroll to a specific section
         checkAndScroll("Best");
         checkAndScroll("Local");
 
-        // --- NEW: Force the lists to refresh their heart icons! ---
+        // Refresh the list to update Heart (Favourite) icons if they were changed elsewhere
         if (adapterBest != null) adapterBest.notifyDataSetChanged();
         if (adapterLocal != null) adapterLocal.notifyDataSetChanged();
 
     }
 
     private void fetchLocationData() {
+        // Fetch 'Best Attractions'
         db.collection("Location Best Attraction Places").get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     listBest.clear();
@@ -105,9 +111,10 @@ public class Location extends AppCompatActivity {
                         listBest.add(item);
                     }
                     adapterBest.notifyDataSetChanged();
-                    checkAndScroll("Best");
+                    checkAndScroll("Best"); // Try to scroll after data is loaded
                 });
 
+        // Fetch 'Local Recommendations'
         db.collection("Location Local Recommendation Places").get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     listLocal.clear();
@@ -116,22 +123,21 @@ public class Location extends AppCompatActivity {
                         listLocal.add(item);
                     }
                     adapterLocal.notifyDataSetChanged();
-                    checkAndScroll("Local");
+                    checkAndScroll("Local"); // Try to scroll after data is loaded
                 });
     }
 
+    // Handles the smooth scrolling logic based on the category clicked from Home.
     private void checkAndScroll(String currentLoadedCategory) {
         String targetCategory = getIntent().getStringExtra("CATEGORY_KEY");
 
         if (targetCategory != null && targetCategory.equals(currentLoadedCategory)) {
 
-            // --- EARLY LOCKING FIX ---
-            // If the gate is already locked, stop immediately!
+            // Prevent multiple toasts if this method is called by both onResume and Firebase
             if (hasToasted) return;
-
-            // Lock the gate NOW before the delay starts
             hasToasted = true;
 
+            // Small delay to ensure the UI has finished drawing before scrolling
             nestedScrollView.postDelayed(() -> {
                 if (targetCategory.equals("Best") && !listBest.isEmpty()) {
                     nestedScrollView.smoothScrollTo(0, rvBestVertical.getTop());
@@ -151,6 +157,7 @@ public class Location extends AppCompatActivity {
         }
     }
 
+    // Navigation bar for switching between Activities
     private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_location);

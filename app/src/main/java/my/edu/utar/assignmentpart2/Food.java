@@ -19,6 +19,8 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
+
+// Fetching food data from Firebase and handles user navigation.
 public class Food extends AppCompatActivity {
 
     private RecyclerView rvFoodVertical;
@@ -29,6 +31,7 @@ public class Food extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Enable full-screen display
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_food);
 
@@ -38,9 +41,10 @@ public class Food extends AppCompatActivity {
             return insets;
         });
 
+        // Firebase Firestore connection
         db = FirebaseFirestore.getInstance();
 
-        // 1. Setup RecyclerView
+        // 1. Setup RecyclerView for food items
         rvFoodVertical = findViewById(R.id.rvFoodVertical);
         rvFoodVertical.setLayoutManager(new LinearLayoutManager(this));
         listFood = new ArrayList<>();
@@ -61,25 +65,28 @@ public class Food extends AppCompatActivity {
         setIntent(intent); // Replace old intent with the new one from MainActivity
     }
 
-    // --- NEW: Check for the Toast message whenever the user sees this screen ---
+    // Runs every time the user comes back to this screen.
+    // Keeps the UI synchronized and updated.
     @Override
     protected void onResume() {
         super.onResume();
 
-        // --- FIX: Sync the Bottom Navigation Bar ---
+        // Ensure the 'Food' icon is highlighted in the bottom menu
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         if (bottomNavigationView != null) {
             bottomNavigationView.setSelectedItemId(R.id.nav_food);
         }
 
+        // Check if we need to show a welcome message
         handleFoodIntent();
 
-        // --- NEW: Force the list to refresh its heart icons! ---
+        // Refresh the list to ensure the heart (favourite) icons match the current status
         if (adapterFood != null) {
             adapterFood.notifyDataSetChanged();
         }
     }
 
+    // Displays a welcome Toast if the user navigated here from the Home Dashboard.
     private void handleFoodIntent() {
         String category = getIntent().getStringExtra("CATEGORY_KEY");
         if ("Food".equals(category)) {
@@ -89,10 +96,11 @@ public class Food extends AppCompatActivity {
         }
     }
 
+    // Connects to Firebase to pull the list of local food
     private void fetchFoodData() {
         db.collection("Food Page Food").get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    listFood.clear();
+                    listFood.clear(); // Clear old data to prevent duplicates
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         LocationModel item = document.toObject(LocationModel.class);
                         listFood.add(item);
@@ -100,10 +108,12 @@ public class Food extends AppCompatActivity {
                     adapterFood.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
+                    // Show error if internet connection fails
                     Toast.makeText(this, "Failed to load Food data", Toast.LENGTH_SHORT).show();
                 });
     }
 
+    // Navigation bar for switching between Activities
     private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_food);
