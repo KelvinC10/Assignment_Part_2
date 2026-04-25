@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/ai_bg_gradient"
+    android:background="#D3D3D3"
     android:orientation="vertical"
     android:padding="18dp">
 
@@ -97,7 +97,7 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_marginTop="12dp"
-        android:background="@drawable/ai_button_bg"
+        android:backgroundTint="#6B7280"
         android:text="Send Message"
         android:textAllCaps="false"
         android:textColor="#FFFFFF"
