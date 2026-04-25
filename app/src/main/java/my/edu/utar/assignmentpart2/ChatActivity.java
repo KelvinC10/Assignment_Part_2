@@ -3,7 +3,7 @@ package my.edu.utar.assignmentpart2;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton; // Added for the arrow
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -47,12 +47,12 @@ public class ChatActivity extends AppCompatActivity {
         tvReply = findViewById(R.id.tvReply);
         btnBackArrow = findViewById(R.id.btnBackArrow); // Initialize the arrow
 
-        // Back Arrow Logic: Go back to AI Travel Assistant screen
+
         btnBackArrow.setOnClickListener(v -> {
             finish();
         });
 
-        // Initialize Firebase and Gemini AI
+
         db = FirebaseFirestore.getInstance();
         GenerativeModel ai = FirebaseAI.getInstance(GenerativeBackend.googleAI())
                 .generativeModel("gemini-2.5-flash");
